@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Travel Planner ✈️</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',system-ui,sans-serif;background:#FFF8F0;color:#3D3028;line-height:1.5;font-size:15px}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#F0EBE5}::-webkit-scrollbar-thumb{background:#C4B8B0;border-radius:3px}
+
+/* ── LAYOUT ── */
+#layout{display:flex;min-height:100vh}
+#sidebar{width:220px;background:#fff;box-shadow:2px 0 16px rgba(100,80,60,.08);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+#content{margin-left:220px;flex:1;padding:32px 40px;max-width:calc(100vw - 220px)}
+.logo-area{padding:24px 20px 16px;border-bottom:1px solid #F0EBE5}
+.logo-em{font-size:28px;margin-bottom:4px}
+.logo-title{font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#3D3028;line-height:1.4}
+.logo-sub{font-size:11px;color:#9E918A;margin-top:2px}
+.nav-area{flex:1;padding:14px 10px}
+.nb{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border-radius:12px;border:none;cursor:pointer;margin-bottom:2px;text-align:left;font-size:13px;font-weight:500;color:#6B5E54;background:transparent;transition:all .15s;font-family:inherit}
+.nb:hover{background:#FFF0E8;color:#3D3028}
+.nb.active{background:linear-gradient(135deg,#F0E8FF,#E8F4FF);color:#9B72D0;font-weight:700}
+.nb-icon{font-size:16px;flex-shrink:0}
+.sidebar-picks{margin:0 10px 10px;padding:12px 14px;background:#F0E8FF;border-radius:12px;font-size:12px;color:#9B72D0;font-weight:600}
+
+/* ── COMMON ── */
+.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(100,80,60,.07)}
+.page-title{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#3D3028;margin-bottom:3px}
+.page-sub{color:#9E918A;font-size:13px;margin-bottom:20px}
+.btn{padding:9px 20px;border-radius:11px;border:none;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-p{background:linear-gradient(135deg,#9B72D0,#7B52B0);color:#fff;box-shadow:0 3px 12px rgba(155,114,208,.3)}
+.btn-g{background:transparent;color:#6B5E54;border:1.5px solid #EDE5DC}
+.btn-r{background:linear-gradient(135deg,#C45A7A,#A03A5A);color:#fff}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px}
+.inp{width:100%;padding:9px 13px;border-radius:11px;border:1.5px solid #EDE5DC;font-size:14px;color:#3D3028;background:#FFF8F0;outline:none;font-family:inherit}
+.inp:focus{border-color:#9B72D0}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:12px;font-weight:600;color:#6B5E54;margin-bottom:5px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:16px;border:2px solid #EDE5DC;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#6B5E54;transition:all .15s;font-family:inherit}
+.chip:hover{border-color:#9B72D0;color:#9B72D0}
+.chip.sel{border-color:#9B72D0;background:#F0E8FF;color:#9B72D0}
+.chip.sel-r{border-color:#C45A7A;background:#FFE8EE;color:#C45A7A}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:16px;font-size:11px;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+/* ── SLIDERS ── */
+.sldr-wrap{margin-bottom:18px}
+.sldr-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sldr-name{font-weight:600;color:#6B5E54;font-size:13px}
+.sldr-val{font-size:18px;font-weight:700;color:#9B72D0}
+input[type=range]{width:100%;height:5px;border-radius:3px;accent-color:#9B72D0;cursor:pointer;background:linear-gradient(to right,#9B72D0 var(--pct,50%),#EDE5DC var(--pct,50%))}
+
+/* ── WORLD MAP ── */
+.map-wrap{background:#fff;border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(100,80,60,.07);margin-bottom:16px}
+.map-wrap svg{width:100%;height:auto;display:block}
+.cont-shape{cursor:pointer;transition:all .2s;stroke:#fff;stroke-width:1.5}
+.cont-shape:hover{filter:brightness(1.1)}
+.cont-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.ct{padding:7px 16px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;font-family:inherit;background:#fff}
+
+/* ── COUNTRY CARDS ── */
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.cc{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(100,80,60,.07);border:2px solid transparent;transition:all .2s}
+.cc:hover{border-color:#D4BAF5}
+.cc.selected{border-color:#9B72D0;background:#FEFAFF}
+.cc-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.cc-flag{font-size:32px;line-height:1;flex-shrink:0}
+.cc-meta{flex:1}
+.cc-name{font-family:'Playfair Display',Georgia,serif;font-size:15px;color:#3D3028;font-weight:600}
+.cc-sub{font-size:11px;color:#9E918A;margin-bottom:4px}
+.cc-stars{font-size:15px;line-height:1}
+.cc-hl{font-size:12px;color:#6B5E54;margin-bottom:10px;line-height:1.5}
+.cc-hl li{margin-left:14px}
+.cc-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.energy-bar{display:flex;gap:2px;align-items:center}
+.edot{width:7px;height:7px;border-radius:50%}
+.edot.on{background:#9B72D0}.edot.off{background:#EDE5DC}
+.city-list{border-top:1px solid #F0EBE5;margin-top:12px;padding-top:12px}
+.city-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #FFF0E8}
+.city-row:last-child{border:none}
+.city-em{font-size:18px;flex-shrink:0}
+.city-info{flex:1;min-width:0}
+.city-name{font-size:13px;font-weight:600;color:#3D3028}
+.city-hl{font-size:11px;color:#9E918A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.city-cb{width:16px;height:16px;cursor:pointer;accent-color:#9B72D0;flex-shrink:0}
+
+/* ── OVERLAY ── */
+#ov{display:none;position:fixed;inset:0;background:rgba(60,40,20,.45);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.mbox{background:#FFF8F0;border-radius:22px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(100,60,20,.25)}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mhdr h3{font-family:'Playfair Display',Georgia,serif;font-size:18px;color:#3D3028}
+.xbtn{background:none;border:none;font-size:20px;color:#9E918A;cursor:pointer}
+
+/* ── PLAN ── */
+.plan-year{margin-bottom:20px}
+.year-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.year-num{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#3D3028}
+.year-age{font-size:12px;color:#9E918A;padding:3px 10px;background:#F0EBE5;border-radius:10px}
+.trip-card{background:#fff;border-radius:14px;padding:14px 16px;border:2px solid #EDE5DC;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.trip-card:hover{border-color:#9B72D0;box-shadow:0 4px 16px rgba(155,114,208,.15)}
+.trip-flags{font-size:22px;flex-shrink:0;line-height:1}
+.trip-body{flex:1;min-width:0}
+.trip-name{font-weight:700;color:#3D3028;font-size:14px;margin-bottom:3px}
+.trip-cities{font-size:12px;color:#9E918A;margin-bottom:6px}
+.trip-meta{display:flex;gap:10px;font-size:12px;flex-wrap:wrap}
+.trip-reorder{display:flex;flex-direction:column;gap:4px}
+.arr-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid #EDE5DC;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.arr-btn:hover{background:#F0E8FF;border-color:#9B72D0}
+.warn-badge{background:#FFE8EE;color:#C45A7A;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:600;margin-top:6px;display:inline-block}
+.ai-tip{background:#F0E8FF;color:#7B52B0;padding:4px 10px;border-radius:8px;font-size:11px;margin-top:5px;display:inline-block}
+
+/* ── PROFILE PHASES ── */
+.phase-row{display:grid;grid-template-columns:130px 1fr 1fr auto;gap:10px;align-items:center;padding:10px 14px;background:#FFF8F0;border-radius:12px;margin-bottom:8px}
+.phase-lbl{font-size:13px;font-weight:600;color:#6B5E54}
+.phase-field{font-size:12px;color:#9E918A;text-align:center}
+.phase-val{font-size:15px;font-weight:700;color:#9B72D0;text-align:center}
+
+@media(max-width:768px){
+  #sidebar{width:100%;height:auto;position:fixed;bottom:0;top:auto;flex-direction:row;overflow-x:auto;padding:8px;z-index:200;box-shadow:0 -2px 16px rgba(100,80,60,.12)}
+  #content{margin-left:0;margin-bottom:72px;padding:16px 14px;max-width:100vw;box-sizing:border-box}
+  .logo-area,.sidebar-picks{display:none}
+  .nav-area{display:flex;flex-direction:row;padding:0;gap:4px;flex:1}
+  .nb{flex-direction:column;gap:2px;font-size:10px;padding:6px 10px;border-radius:10px}
+  .country-grid{grid-template-columns:1fr}
+  .phase-row{grid-template-columns:1fr 1fr !important;gap:8px !important}
+  .phase-row > div:first-child{grid-column:1/-1}
+  .g2{grid-template-columns:1fr !important}
+  .card{padding:16px}
+  .inp{font-size:16px !important}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ov" onclick="if(this===event.target)closeM()"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DESTINATION DATABASE
+// ═══════════════════════════════════════════════════
+const CONTS = [
+  {id:'asia',     label:'🌏 Asia',     color:'#9B72D0', dim:'#C9A8E8'},
+  {id:'europe',   label:'🌍 Europe',   color:'#5A9EC4', dim:'#8EC5E0'},
+  {id:'americas', label:'🌎 Americas', color:'#5CB88A', dim:'#8FD4AA'},
+  {id:'africa',   label:'🌍 Africa',   color:'#E8956A', dim:'#F0BA98'},
+  {id:'oceania',  label:'🏝️ Oceania',  color:'#C45A7A', dim:'#DC8FA4'},
+  {id:'polar',    label:'🧊 Polar',    color:'#7ABCD4', dim:'#A8D6E8'},
+];
+
+const DB = [
+// ── ASIA ──
+{id:'japan',cont:'asia',sub:'East Asia',name:'Japan',flag:'🇯🇵',
+ desc:'วัฒนธรรม ประวัติศาสตร์ อาหารชั้นเยี่ยม',
+ energy:2,cost:85000,cold:false,walk:true,risk:1,wow:4,
+ best:'มี.ค.-เม.ย. (ซากุระ) / พ.ย. (ใบไม้แดง)',
+ tags:['culture','food','history','city'],
+ hl:['ซากุระ & ใบไม้แดง','วัดชินโต-พุทธ','อาหาร Sushi Ramen','Onsen ออนเซ็น'],
+ cities:[
+  {id:'tokyo',name:'Tokyo',em:'🏙️',hl:'Shibuya Crossing ช้อปปิ้ง Harajuku วัด Senso-ji',energy:2,cost:28000,days:3},
+  {id:'kyoto',name:'Kyoto',em:'⛩️',hl:'Fushimi Inari พันประตู Gion Geisha Kinkaku-ji',energy:2,cost:22000,days:3},
+  {id:'osaka',name:'Osaka',em:'🦀',hl:'Dotonbori ตลาดอาหาร Namba ปราสาท Osaka',energy:2,cost:18000,days:2},
+  {id:'hokkaido',name:'Hokkaido',em:'❄️',hl:'สกีฤดูหนาว ดอกลาเวนเดอร์ฤดูร้อน อาหารทะเล',energy:2,cost:28000,days:3},
+  {id:'nara',name:'Nara',em:'🦌',hl:'กวาง friendly วัด Todai-ji ประตูทาง Kyoto',energy:1,cost:8000,days:1},
+ ]},
+
+{id:'skorea',cont:'asia',sub:'East Asia',name:'South Korea',flag:'🇰🇷',
+ desc:'K-Culture แฟชั่น อาหาร ประวัติศาสตร์',
+ energy:2,cost:70000,cold:true,walk:true,risk:1,wow:3,
+ best:'เม.ย. (Cherry Blossom) / ต.ค.-พ.ย. (ใบไม้แดง)',
+ tags:['culture','food','city'],
+ hl:['K-Pop & K-Drama culture','พระราชวัง Gyeongbokgung','อาหาร BBQ Bibimbap','ช้อปปิ้ง Myeongdong'],
+ cities:[
+  {id:'seoul',name:'Seoul',em:'🏙️',hl:'Myeongdong พระราชวัง N Seoul Tower Bukchon',energy:2,cost:22000,days:3},
+  {id:'busan',name:'Busan',em:'🌊',hl:'ชายหาด Haeundae วัด Haedong Yonggungsa ตลาดปลา',energy:2,cost:18000,days:2},
+  {id:'jeju',name:'Jeju',em:'🌺',hl:'เกาะสวรรค์ ภูเขาไฟ Hallasan น้ำตก ชายหาดดำ',energy:2,cost:20000,days:2},
+ ]},
+
+{id:'taiwan',cont:'asia',sub:'East Asia',name:'Taiwan',flag:'🇹🇼',
+ desc:'อาหารดี ตลาดกลางคืน ธรรมชาติสวย',
+ energy:2,cost:55000,cold:false,walk:true,risk:1,wow:3,
+ best:'ต.ค.-เม.ย. (อากาศดี)',
+ tags:['food','culture','nature'],
+ hl:['ตลาดกลางคืน Shilin','Jiufen เมืองหมอก','Taroko Gorge ธรรมชาติ','Bubble Tea ต้นกำเนิด'],
+ cities:[
+  {id:'taipei',name:'Taipei',em:'🏙️',hl:'101 ตลาดกลางคืน Longshan Temple ตึกระฟ้า',energy:2,cost:18000,days:3},
+  {id:'jiufen',name:'Jiufen',em:'🌫️',hl:'เมืองบนเขา หมอก บรรยากาศ Spirited Away',energy:2,cost:8000,days:1},
+  {id:'taroko',name:'Taroko',em:'🏔️',hl:'Taroko Gorge หุบเขาหินอ่อน เดินป่า',energy:3,cost:12000,days:2},
+ ]},
+
+{id:'vietnam',cont:'asia',sub:'Southeast Asia',name:'Vietnam',flag:'🇻🇳',
+ desc:'ประวัติศาสตร์ อาหาร ธรรมชาติสวย',
+ energy:2,cost:45000,cold:false,walk:true,risk:1,wow:3,
+ best:'ต.ค.-เม.ย. (เหนือ) / ม.ค.-ส.ค. (ใต้)',
+ tags:['culture','food','history','nature'],
+ hl:['Ha Long Bay มรดกโลก','อาหาร Pho Banh Mi','Hoi An เมืองเก่า','Sapa นาขั้นบันได'],
+ cities:[
+  {id:'hanoi',name:'Hanoi',em:'🏛️',hl:'Old Quarter ทะเลสาบ Ho Chi Minh Mausoleum',energy:2,cost:12000,days:2},
+  {id:'halong',name:'Ha Long Bay',em:'⛵',hl:'Ha Long Bay มรดกโลก ล่องเรือ ถ้ำสวย',energy:2,cost:15000,days:2},
+  {id:'hoian',name:'Hoi An',em:'🏮',hl:'เมืองเก่า lantern ตัดเย็บเสื้อผ้าราคาถูก',energy:1,cost:10000,days:2},
+  {id:'sapa',name:'Sapa',em:'🏔️',hl:'นาขั้นบันได เดินป่า ชนเผ่า Hmong',energy:3,cost:12000,days:2},
+  {id:'hcm',name:'Ho Chi Minh',em:'🌆',hl:'Cu Chi Tunnels War Remnants Museum อาหาร',energy:2,cost:12000,days:2},
+ ]},
+
+{id:'cambodia',cont:'asia',sub:'Southeast Asia',name:'Cambodia',flag:'🇰🇭',
+ desc:'อารยธรรม Khmer ยิ่งใหญ่',
+ energy:2,cost:35000,cold:false,walk:true,risk:1,wow:4,
+ best:'พ.ย.-มี.ค. (แล้ง)',
+ tags:['history','culture'],
+ hl:['Angkor Wat มรดกโลก','อารยธรรม Khmer','ล่องเรือทะเลสาบ Tonle Sap','ราคาถูก'],
+ cities:[
+  {id:'siemreap',name:'Siem Reap',em:'🛕',hl:'Angkor Wat Angkor Thom Bayon Sunrise ยิ่งใหญ่',energy:2,cost:15000,days:3},
+  {id:'phnompenh',name:'Phnom Penh',em:'🏛️',hl:'Royal Palace Killing Fields ประวัติศาสตร์',energy:2,cost:10000,days:1},
+ ]},
+
+{id:'laos',cont:'asia',sub:'Southeast Asia',name:'Laos',flag:'🇱🇦',
+ desc:'สงบ บรรยากาศดี มรดกโลก',
+ energy:1,cost:25000,cold:false,walk:true,risk:1,wow:3,
+ best:'พ.ย.-มี.ค.',
+ tags:['culture','slow travel','history'],
+ hl:['Luang Prabang มรดกโลก','บิณฑบาตพระ','น้ำตก Kuang Si','บรรยากาศสงบที่สุด'],
+ cities:[
+  {id:'luangprabang',name:'Luang Prabang',em:'🌅',hl:'เมืองมรดกโลก บิณฑบาต น้ำตก Kuang Si',energy:1,cost:12000,days:3},
+  {id:'vientiane',name:'Vientiane',em:'🏛️',hl:'Patuxai Buddha Park วัด Pha That Luang',energy:1,cost:8000,days:1},
+ ]},
+
+{id:'indonesia',cont:'asia',sub:'Southeast Asia',name:'Indonesia',flag:'🇮🇩',
+ desc:'เกาะสวรรค์ วัฒนธรรมฮินดู Komodo',
+ energy:2,cost:50000,cold:false,walk:false,risk:1,wow:4,
+ best:'เม.ย.-ต.ค. (แล้ง)',
+ tags:['culture','nature','slow travel'],
+ hl:['Bali วัฒนธรรมฮินดู','Komodo Dragon','Raja Ampat Snorkel/Dive','Borobudur วัดพุทธ'],
+ cities:[
+  {id:'bali',name:'Bali',em:'🌺',hl:'Ubud วัฒนธรรม Tanah Lot Seminyak Beach Spa',energy:1,cost:18000,days:5},
+  {id:'yogya',name:'Yogyakarta',em:'🛕',hl:'Borobudur วัดพุทธใหญ่ Prambanan Batik',energy:2,cost:12000,days:2},
+  {id:'komodo',name:'Komodo Island',em:'🦎',hl:'Komodo Dragon มังกร Pink Beach เดินป่า',energy:3,cost:18000,days:2},
+  {id:'rajaamfat',name:'Raja Ampat',em:'🤿',hl:'Snorkel Dive สวรรค์ใต้ทะเล แหล่งปะการัง',energy:3,cost:28000,days:4},
+ ]},
+
+{id:'india',cont:'asia',sub:'South Asia',name:'India',flag:'🇮🇳',
+ desc:'อารยธรรมเก่าแก่ หลากหลายวัฒนธรรม',
+ energy:3,cost:65000,cold:false,walk:true,risk:2,wow:4,
+ best:'ต.ค.-มี.ค. (หนาวน้อย)',
+ tags:['history','culture','food','adventure'],
+ hl:['Taj Mahal มหัศจรรย์โลก','Rajasthan ป้อมปราการ','Kerala แบ็ควอเตอร์','Varanasi ริมคงคา'],
+ cities:[
+  {id:'agra',name:'Agra (Taj Mahal)',em:'🕌',hl:'Taj Mahal หนึ่งในมหัศจรรย์โลก Agra Fort',energy:2,cost:15000,days:1},
+  {id:'jaipur',name:'Jaipur',em:'🏰',hl:'Pink City Amber Fort City Palace ตลาดสี',energy:2,cost:14000,days:2},
+  {id:'udaipur',name:'Udaipur',em:'🏯',hl:'City of Lakes Floating Palace รอมยา',energy:2,cost:14000,days:2},
+  {id:'kerala',name:'Kerala',em:'🌴',hl:'Backwater เรือ Houseboat ธรรมชาติ Spice',energy:1,cost:18000,days:3},
+  {id:'varanasi',name:'Varanasi',em:'🕉️',hl:'ริมแม่น้ำคงคา พิธีบูชา Ganga Aarti ลึกซึ้ง',energy:3,cost:10000,days:2},
+ ]},
+
+{id:'nepal',cont:'asia',sub:'South Asia',name:'Nepal',flag:'🇳🇵',
+ desc:'Himalaya ยิ่งใหญ่ วัฒนธรรม Sherpa',
+ energy:5,cost:90000,cold:true,walk:true,risk:3,wow:5,
+ best:'มี.ค.-พ.ค. / ก.ย.-พ.ย.',
+ tags:['adventure','nature'],
+ hl:['Everest Base Camp 5,364m','Annapurna Trek','Kathmandu Durbar Square','ต้องฝึกร่างกายมาก'],
+ cities:[
+  {id:'kathmandu',name:'Kathmandu',em:'🛕',hl:'Durbar Square Boudhanath Stupa Monkey Temple',energy:2,cost:12000,days:2},
+  {id:'pokhara',name:'Pokhara',em:'🏔️',hl:'ทะเลสาบ Phewa Annapurna Trek เริ่มต้น',energy:4,cost:15000,days:3},
+  {id:'ebc',name:'Everest Base Camp',em:'⛰️',hl:'Trek 12-14 วัน ความสูง 5364m ประสบการณ์สูงสุด',energy:5,cost:45000,days:14},
+ ]},
+
+{id:'bhutan',cont:'asia',sub:'South Asia',name:'Bhutan',flag:'🇧🇹',
+ desc:'อาณาจักรบนหิมาลัย ความสุขมวลรวม',
+ energy:3,cost:100000,cold:true,walk:true,risk:1,wow:5,
+ best:'มี.ค.-พ.ค. / ก.ย.-พ.ย.',
+ tags:['culture','nature','adventure'],
+ hl:['Tiger\'s Nest วัดบนหน้าผา','ค่าวีซ่า $250/วัน','ไม่มีนักท่องเที่ยวล้น','ประสบการณ์ unique'],
+ cities:[
+  {id:'thimphu',name:'Thimphu',em:'🏔️',hl:'เมืองหลวง Buddha Dordenma Folk Museum',energy:2,cost:20000,days:2},
+  {id:'paro',name:'Paro',em:'⛰️',hl:'Tiger\'s Nest เดินขึ้นเขา 2 ชม. สวยมาก',energy:4,cost:20000,days:2},
+ ]},
+
+{id:'jordan',cont:'asia',sub:'Middle East',name:'Jordan',flag:'🇯🇴',
+ desc:'เมืองหินโบราณ ทะเลทราย Dead Sea',
+ energy:3,cost:80000,cold:false,walk:true,risk:2,wow:5,
+ best:'มี.ค.-พ.ค. / ก.ย.-พ.ย.',
+ tags:['history','adventure','culture'],
+ hl:['Petra เมืองหินโบราณ','Wadi Rum ทะเลทรายสีแดง','Dead Sea ทะเลตาย','ปลอดภัยดี'],
+ cities:[
+  {id:'petra',name:'Petra',em:'🏛️',hl:'Treasury หน้าผากลัก Rose-Red City เดิน 5-8 กม.',energy:3,cost:25000,days:2},
+  {id:'wadirum',name:'Wadi Rum',em:'🏜️',hl:'ทะเลทรายสีแดง camp ดาว โขดหิน Mars-like',energy:2,cost:18000,days:1},
+  {id:'deadsea',name:'Dead Sea',em:'💧',hl:'เกลือสูงสุด ลอยตัวเองได้ โคลนบำรุงผิว',energy:1,cost:12000,days:1},
+ ]},
+
+{id:'oman',cont:'asia',sub:'Middle East',name:'Oman',flag:'🇴🇲',
+ desc:'ทะเลทราย Wadi ปลอดภัยสูง',
+ energy:2,cost:90000,cold:false,walk:false,risk:1,wow:4,
+ best:'ต.ค.-มี.ค.',
+ tags:['adventure','culture'],
+ hl:['ปลอดภัยสุดในตะวันออกกลาง','Wahiba Sands ทะเลทราย','Wadi Shab ว่ายน้ำในหุบเขา','ปราสาทโบราณ'],
+ cities:[
+  {id:'muscat',name:'Muscat',em:'🕌',hl:'Sultan Qaboos Grand Mosque ตลาด Mutrah Souq',energy:2,cost:22000,days:2},
+  {id:'wahiba',name:'Wahiba Sands',em:'🏜️',hl:'ทะเลทรายขี่อูฐ camp กลางทะเลทราย',energy:2,cost:15000,days:1},
+  {id:'wadishab',name:'Wadi Shab',em:'💧',hl:'ว่ายน้ำผ่านถ้ำสีฟ้า เดินเท้า 2 ชม.',energy:3,cost:8000,days:1},
+ ]},
+
+{id:'turkey',cont:'asia',sub:'Middle East',name:'Turkey',flag:'🇹🇷',
+ desc:'จุดพบระหว่างตะวันออก-ตก',
+ energy:2,cost:75000,cold:false,walk:true,risk:2,wow:4,
+ best:'เม.ย.-มิ.ย. / ก.ย.-ต.ค.',
+ tags:['history','culture','food','city'],
+ hl:['Cappadocia บอลลูน','Istanbul สองทวีป','Pamukkale น้ำพุ','Ephesus กรีก-โรมัน'],
+ cities:[
+  {id:'istanbul',name:'Istanbul',em:'🕌',hl:'Hagia Sophia Blue Mosque Grand Bazaar Bosphorus',energy:2,cost:22000,days:3},
+  {id:'cappadocia',name:'Cappadocia',em:'🎈',hl:'บอลลูน Sunrise ถ้ำ Fairy Chimney สวยมาก',energy:2,cost:25000,days:2},
+  {id:'pamukkale',name:'Pamukkale',em:'🌊',hl:'น้ำพุร้อน Travertine สีขาว Hierapolis โบราณ',energy:2,cost:12000,days:1},
+ ]},
+
+// ── EUROPE ──
+{id:'france',cont:'europe',sub:'Western Europe',name:'France',flag:'🇫🇷',
+ desc:'ศิลปะ อาหาร แฟชั่น วัฒนธรรม',
+ energy:2,cost:130000,cold:false,walk:true,risk:1,wow:4,
+ best:'เม.ย.-มิ.ย. / ก.ย.-ต.ค.',
+ tags:['culture','food','art','city','luxury'],
+ hl:['Eiffel Tower ปารีส','Louvre พิพิธภัณฑ์','อาหาร Croissant','Provence ดอกลาเวนเดอร์'],
+ cities:[
+  {id:'paris',name:'Paris',em:'🗼',hl:'Eiffel Louvre Notre Dame Montmartre Versailles',energy:2,cost:40000,days:5},
+  {id:'provence',name:'Provence',em:'💜',hl:'ทุ่งดอกลาเวนเดอร์ Gordes อาหารดี',energy:1,cost:30000,days:3},
+  {id:'nice',name:'Nice & Riviera',em:'🌊',hl:'ชายหาด French Riviera Monaco Cannes',energy:1,cost:30000,days:3},
+ ]},
+
+{id:'italy',cont:'europe',sub:'Mediterranean',name:'Italy',flag:'🇮🇹',
+ desc:'อาหาร ศิลปะ ประวัติศาสตร์ อัดแน่น',
+ energy:2,cost:120000,cold:false,walk:true,risk:1,wow:4,
+ best:'เม.ย.-มิ.ย. / ก.ย.-ต.ค.',
+ tags:['history','food','art','culture'],
+ hl:['Colosseum โรม','Vatican ศิลปะ','Cinque Terre','Amalfi Coast','Tuscany ไร่องุ่น'],
+ cities:[
+  {id:'rome',name:'Rome',em:'🏛️',hl:'Colosseum Vatican Forum Roman Trevi Fountain',energy:2,cost:30000,days:4},
+  {id:'florence',name:'Florence',em:'🖼️',hl:'Uffizi Gallery Duomo รูปปั้น David',energy:2,cost:25000,days:3},
+  {id:'venice',name:'Venice',em:'🚣',hl:'คลอง Gondola St Mark อาหารทะเล',energy:2,cost:28000,days:2},
+  {id:'amalfi',name:'Amalfi Coast',em:'🌊',hl:'ชายฝั่งผาสูง Positano Ravello Sorrento',energy:3,cost:30000,days:3},
+  {id:'tuscany',name:'Tuscany',em:'🍷',hl:'ไร่องุ่น Chianti ขับรถชิล San Gimignano',energy:1,cost:30000,days:3},
+ ]},
+
+{id:'spain',cont:'europe',sub:'Mediterranean',name:'Spain',flag:'🇪🇸',
+ desc:'ศิลปะ Gaudi Flamenco อาหาร Tapas',
+ energy:2,cost:100000,cold:false,walk:true,risk:1,wow:4,
+ best:'มี.ค.-พ.ค. / ก.ย.-พ.ย.',
+ tags:['culture','food','art','city'],
+ hl:['Sagrada Familia','Alhambra Granada','Flamenco','Tapas Bar culture'],
+ cities:[
+  {id:'barcelona',name:'Barcelona',em:'🏛️',hl:'Sagrada Familia Park Güell Barceloneta Beach',energy:2,cost:28000,days:4},
+  {id:'madrid',name:'Madrid',em:'🖼️',hl:'Prado Museum Retiro Park Tapas Bar hop',energy:2,cost:22000,days:3},
+  {id:'granada',name:'Granada',em:'🏰',hl:'Alhambra Generalife Albaicín ยอดเยี่ยมมาก',energy:2,cost:18000,days:2},
+  {id:'seville',name:'Seville',em:'💃',hl:'Flamenco Alcázar Cathedral Orange trees',energy:2,cost:18000,days:2},
+ ]},
+
+{id:'portugal',cont:'europe',sub:'Western Europe',name:'Portugal',flag:'🇵🇹',
+ desc:'ชายฝั่ง ไวน์ Fado เมืองเก่า คุ้มค่า',
+ energy:2,cost:90000,cold:false,walk:true,risk:1,wow:3,
+ best:'มี.ค.-พ.ค. / ก.ย.-ต.ค.',
+ tags:['culture','food','city','slow travel'],
+ hl:['Lisbon เมืองบนเนิน','Sintra ปราสาทในป่า','Porto Port Wine','Algarve ชายหาด'],
+ cities:[
+  {id:'lisbon',name:'Lisbon',em:'🚃',hl:'Alfama Tram 28 Belem Tower Fado music',energy:2,cost:25000,days:3},
+  {id:'porto',name:'Porto',em:'🍷',hl:'Port Wine Dom Luis Bridge Ribeira เมืองเก่า',energy:2,cost:22000,days:2},
+  {id:'sintra',name:'Sintra',em:'🏰',hl:'Pena Palace Quinta da Regaleira ในป่า',energy:2,cost:12000,days:1},
+ ]},
+
+{id:'uk',cont:'europe',sub:'Northern Europe',name:'United Kingdom',flag:'🇬🇧',
+ desc:'ประวัติศาสตร์ Royal Highlands Scotland',
+ energy:2,cost:130000,cold:true,walk:true,risk:1,wow:3,
+ best:'พ.ค.-ก.ย.',
+ tags:['history','culture','city'],
+ hl:['Big Ben Westminster','Edinburgh Castle','Stonehenge','Lake District','Harry Potter'],
+ cities:[
+  {id:'london',name:'London',em:'🎡',hl:'Big Ben Tower of London Buckingham British Museum',energy:2,cost:40000,days:4},
+  {id:'edinburgh',name:'Edinburgh',em:'🏰',hl:'Edinburgh Castle Royal Mile Whisky',energy:2,cost:30000,days:3},
+  {id:'cotswolds',name:'Cotswolds',em:'🌿',hl:'หมู่บ้าน Honey stone ทุ่งหญ้าอังกฤษ',energy:1,cost:20000,days:2},
+ ]},
+
+{id:'iceland',cont:'europe',sub:'Northern Europe',name:'Iceland',flag:'🇮🇸',
+ desc:'แสงเหนือ ภูเขาไฟ น้ำตก ธรรมชาติสุดขั้ว',
+ energy:2,cost:160000,cold:true,walk:false,risk:1,wow:5,
+ best:'ก.ย.-มี.ค. (แสงเหนือ) / มิ.ย.-ส.ค. (Midnight Sun)',
+ tags:['nature','adventure'],
+ hl:['Northern Lights แสงเหนือ','Golden Circle','Black Sand Beach','Blue Lagoon'],
+ cities:[
+  {id:'reykjavik',name:'Reykjavik',em:'🏙️',hl:'Hallgrimskirkja Blue Lagoon ชีวิตเมือง',energy:1,cost:35000,days:2},
+  {id:'goldcirc',name:'Golden Circle',em:'💧',hl:'Thingvellir Geysir Gullfoss น้ำตก',energy:2,cost:20000,days:1},
+  {id:'vik',name:'South Coast',em:'⚫',hl:'Reynisfjara Black Beach Skogafoss น้ำตก',energy:2,cost:20000,days:1},
+ ]},
+
+{id:'norway',cont:'europe',sub:'Northern Europe',name:'Norway',flag:'🇳🇴',
+ desc:'Fjord ธรรมชาติสวย แสงเหนือ',
+ energy:2,cost:160000,cold:true,walk:false,risk:1,wow:4,
+ best:'มิ.ย.-ส.ค. (Fjord) / ธ.ค.-มี.ค. (แสงเหนือ)',
+ tags:['nature','slow travel','adventure'],
+ hl:['Geirangerfjord UNESCO','Flam Railway รถไฟสวย','Preikestolen ผาชม Fjord','Tromso แสงเหนือ'],
+ cities:[
+  {id:'bergen',name:'Bergen',em:'🎨',hl:'Bryggen ท่าเรือสี Flobanen ชมเมือง',energy:2,cost:35000,days:2},
+  {id:'fjords',name:'Fjords',em:'⛰️',hl:'Geirangerfjord Naeroyfjord ล่องเรือ Flam Railway',energy:2,cost:40000,days:2},
+  {id:'tromso',name:'Tromso',em:'🌌',hl:'แสงเหนือ Sami culture เที่ยวหิมะ',energy:2,cost:35000,days:2},
+ ]},
+
+{id:'switzerland',cont:'europe',sub:'Central Europe',name:'Switzerland',flag:'🇨🇭',
+ desc:'เทือกเขาแอลป์ หิมะ นาฬิกา',
+ energy:2,cost:160000,cold:true,walk:false,risk:1,wow:4,
+ best:'มิ.ย.-ก.ย. (ฤดูร้อน) / ธ.ค.-มี.ค. (สกี)',
+ tags:['nature','luxury'],
+ hl:['Matterhorn Zermatt','Jungfraujoch ยอดยุโรป','Interlaken ผจญภัย','Lake Lucerne'],
+ cities:[
+  {id:'interlaken',name:'Interlaken',em:'🏔️',hl:'Paragliding Skydive Jungfrau ธรรมชาติ',energy:3,cost:40000,days:3},
+  {id:'zermatt',name:'Zermatt',em:'⛰️',hl:'Matterhorn ยิ่งใหญ่ สกี รถไฟขึ้นเขา',energy:2,cost:40000,days:3},
+ ]},
+
+{id:'greece',cont:'europe',sub:'Mediterranean',name:'Greece',flag:'🇬🇷',
+ desc:'ประวัติศาสตร์ เกาะสวย ชีวิตชิล',
+ energy:1,cost:100000,cold:false,walk:true,risk:1,wow:4,
+ best:'เม.ย.-มิ.ย. / ก.ย.-ต.ค.',
+ tags:['history','culture','slow travel','luxury'],
+ hl:['Santorini ขาว-น้ำเงิน','Acropolis กรุงเอเธนส์','Mykonos Party','Meteora วัดบนหิน'],
+ cities:[
+  {id:'athens',name:'Athens',em:'🏛️',hl:'Acropolis Parthenon Plaka Agora อารยธรรม',energy:2,cost:22000,days:3},
+  {id:'santorini',name:'Santorini',em:'🌅',hl:'Oia Sunset Caldera View White-Blue Houses',energy:1,cost:35000,days:3},
+  {id:'meteora',name:'Meteora',em:'🧱',hl:'วัดบนหินสูงชัน UNESCO ทิวทัศน์น่าทึ่ง',energy:2,cost:18000,days:1},
+ ]},
+
+{id:'croatia',cont:'europe',sub:'Eastern Europe',name:'Croatia',flag:'🇭🇷',
+ desc:'ชายฝั่ง Adriatic Dubrovnik เมืองเก่า',
+ energy:2,cost:90000,cold:false,walk:true,risk:1,wow:4,
+ best:'พ.ค.-ก.ย.',
+ tags:['history','nature','slow travel'],
+ hl:['Dubrovnik King\'s Landing','Plitvice Lakes น้ำตกสี','Hvar เกาะสวย','Split เมืองเก่า'],
+ cities:[
+  {id:'dubrovnik',name:'Dubrovnik',em:'🏰',hl:'Old City Wall Game of Thrones เรือรอบเมือง',energy:2,cost:28000,days:2},
+  {id:'plitvice',name:'Plitvice Lakes',em:'💧',hl:'น้ำตกสีฟ้า-เขียว UNESCO เดินป่า',energy:2,cost:15000,days:1},
+  {id:'split',name:'Split',em:'🌊',hl:'Diocletian\'s Palace เมืองเก่า Ferry Hub',energy:2,cost:18000,days:2},
+ ]},
+
+{id:'denmark',cont:'europe',sub:'Northern Europe',name:'Denmark',flag:'🇩🇰',
+ desc:'ดีไซน์ Hygge ปราสาท เมืองสะอาด',
+ energy:1,cost:110000,cold:true,walk:true,risk:1,wow:3,
+ best:'พ.ค.-ส.ค. (ฤดูร้อน)',
+ tags:['culture','city','design','food'],
+ hl:['Copenhagen เมืองแห่งความสุข','Hygge วัฒนธรรม Cozy','ปราสาท Kronborg','Tivoli Gardens'],
+ cities:[
+  {id:'copenhagen',name:'Copenhagen',em:'🏰',hl:'Nyhavn ท่าเรือสีสัน Tivoli The Little Mermaid',energy:1,cost:40000,days:3},
+  {id:'aarhus',name:'Aarhus',em:'🎨',hl:'ARoS Art Museum Rainbow Panorama Den Gamle By',energy:1,cost:25000,days:2},
+  {id:'kronborg',name:'Kronborg',em:'🏯',hl:'ปราสาท Hamlet Elsinore UNESCO มรดกโลก',energy:1,cost:15000,days:1},
+ ]},
+
+{id:'germany',cont:'europe',sub:'Central Europe',name:'Germany',flag:'🇩🇪',
+ desc:'ประวัติศาสตร์ เบียร์ ปราสาท เทคโนโลยี',
+ energy:2,cost:120000,cold:true,walk:true,risk:1,wow:3,
+ best:'พ.ค.-ก.ย. / ธ.ค. (Christmas Market)',
+ tags:['history','culture','food','city'],
+ hl:['Neuschwanstein ปราสาทเทพนิยาย','Oktoberfest เบียร์','Berlin Wall ประวัติศาสตร์','Christmas Markets'],
+ cities:[
+  {id:'berlin',name:'Berlin',em:'🏛️',hl:'Brandenburg Gate Berlin Wall Museum Island ประวัติศาสตร์',energy:2,cost:35000,days:3},
+  {id:'munich',name:'Munich',em:'🍺',hl:'Marienplatz Oktoberfest Neuschwanstein BMW Museum',energy:2,cost:35000,days:3},
+  {id:'neuschwanstein',name:'Neuschwanstein',em:'🏰',hl:'ปราสาทเทพนิยาย Romantic Road Bavaria',energy:2,cost:20000,days:1},
+  {id:'hamburg',name:'Hamburg',em:'⚓',hl:'Miniatur Wunderland Speicherstadt ท่าเรือ',energy:2,cost:25000,days:2},
+ ]},
+
+{id:'hungary',cont:'europe',sub:'Eastern Europe',name:'Hungary',flag:'🇭🇺',
+ desc:'บูดาเปสต์สวยงาม อาบน้ำแร่ สถาปัตยกรรม',
+ energy:2,cost:75000,cold:true,walk:true,risk:1,wow:4,
+ best:'เม.ย.-มิ.ย. / ก.ย.-ต.ค.',
+ tags:['history','culture','architecture','food'],
+ hl:['Budapest ปารีสแห่งตะวันออก','Thermal Baths อาบน้ำแร่','Parliament สวยงามริมน้ำ','Ruin Bars'],
+ cities:[
+  {id:'budapest',name:'Budapest',em:'🌉',hl:'Chain Bridge Parliament Fisherman Bastion Széchenyi Bath',energy:2,cost:30000,days:3},
+  {id:'eger',name:'Eger',em:'🏰',hl:'ปราสาท Eger หุบเขาสาวสวย Wine Valley',energy:1,cost:15000,days:1},
+  {id:'lake_balaton',name:'Lake Balaton',em:'🌊',hl:'ทะเลสาบใหญ่สุดในยุโรปกลาง ชายหาด',energy:1,cost:12000,days:1},
+ ]},
+
+{id:'poland',cont:'europe',sub:'Eastern Europe',name:'Poland',flag:'🇵🇱',
+ desc:'ประวัติศาสตร์ Auschwitz เมืองเก่ามรดกโลก',
+ energy:2,cost:70000,cold:true,walk:true,risk:1,wow:3,
+ best:'พ.ค.-ก.ย.',
+ tags:['history','culture','architecture'],
+ hl:['Krakow เมืองเก่า UNESCO','Auschwitz ประวัติศาสตร์','Wieliczka Salt Mine','Warsaw ฟื้นจากสงคราม'],
+ cities:[
+  {id:'krakow',name:'Krakow',em:'🏰',hl:'Old Town UNESCO Wawel Castle Kazimierz Jewish Quarter',energy:2,cost:22000,days:3},
+  {id:'auschwitz',name:'Auschwitz',em:'🕯️',hl:'Auschwitz-Birkenau Memorial UNESCO ประวัติศาสตร์สำคัญ',energy:2,cost:8000,days:1},
+  {id:'warsaw',name:'Warsaw',em:'🦅',hl:'Old Town ที่สร้างใหม่ Royal Castle Chopin Museum',energy:2,cost:20000,days:2},
+  {id:'wieliczka',name:'Wieliczka',em:'⛏️',hl:'เหมืองเกลือ UNESCO โบสถ์ใต้ดิน ประติมากรรมเกลือ',energy:2,cost:8000,days:1},
+ ]},
+
+{id:'sweden',cont:'europe',sub:'Northern Europe',name:'Sweden',flag:'🇸🇪',
+ desc:'ธรรมชาติงดงาม Northern Lights ดีไซน์สแกนดิเนเวีย',
+ energy:2,cost:130000,cold:true,walk:true,risk:1,wow:3,
+ best:'มิ.ย.-ส.ค. (ฤดูร้อน) / ธ.ค.-มี.ค. (Aurora)',
+ tags:['nature','culture','design','adventure'],
+ hl:['Stockholm เมืองบนน้ำ','Northern Lights Lapland','ABBA Museum','Midsommar เทศกาล'],
+ cities:[
+  {id:'stockholm',name:'Stockholm',em:'🏙️',hl:'Gamla Stan ABBA Museum Vasa Museum เมืองบนเกาะ',energy:2,cost:45000,days:3},
+  {id:'lapland_se',name:'Lapland',em:'🌌',hl:'Northern Lights สุนัขลาก Ice Hotel Sami Culture',energy:2,cost:55000,days:3},
+  {id:'gothenburg',name:'Gothenburg',em:'🎡',hl:'Liseberg Archipelago Volvo Museum',energy:1,cost:30000,days:2},
+ ]},
+
+// ── AMERICAS ──
+{id:'usa',cont:'americas',sub:'North America',name:'USA',flag:'🇺🇸',
+ desc:'หลากหลาย ธรรมชาติ เมืองใหญ่',
+ energy:3,cost:180000,cold:false,walk:false,risk:2,wow:4,
+ best:'ขึ้นอยู่กับภูมิภาค',
+ tags:['nature','city','adventure','food'],
+ hl:['Grand Canyon ยิ่งใหญ่','New York Manhattan','Hawaii เกาะสวรรค์','Yellowstone ธรรมชาติ'],
+ cities:[
+  {id:'newyork',name:'New York',em:'🗽',hl:'Manhattan Central Park Times Square Broadway',energy:3,cost:50000,days:4},
+  {id:'hawaii',name:'Hawaii',em:'🌺',hl:'Waikiki Beach Volcanic NP Luau ชีวิตเกาะ',energy:2,cost:55000,days:5},
+  {id:'grandcanyon',name:'Grand Canyon',em:'🏜️',hl:'Grand Canyon Rim Hike Antelope Canyon Utah',energy:3,cost:35000,days:3},
+  {id:'yellowstone',name:'Yellowstone',em:'🦬',hl:'Old Faithful Geyser Bears Wolves ธรรมชาติ',energy:2,cost:35000,days:3},
+  {id:'alaska',name:'Alaska',em:'🐻',hl:'Glacier Bay Denali Aurora Borealis Wildlife',energy:3,cost:60000,days:5},
+ ]},
+
+{id:'canada',cont:'americas',sub:'North America',name:'Canada',flag:'🇨🇦',
+ desc:'ธรรมชาติกว้างใหญ่ Banff Rocky Mountains',
+ energy:2,cost:150000,cold:true,walk:false,risk:1,wow:4,
+ best:'มิ.ย.-ก.ย. (ฤดูร้อน)',
+ tags:['nature','adventure'],
+ hl:['Banff Rocky Mountains','Niagara Falls','Quebec City เมืองฝรั่งเศส','Northern Lights Yukon'],
+ cities:[
+  {id:'banff',name:'Banff',em:'🏔️',hl:'Lake Louise Moraine Lake Icefields Parkway',energy:2,cost:40000,days:4},
+  {id:'vancouver',name:'Vancouver',em:'🌲',hl:'Stanley Park Whistler Mountains Downtown',energy:2,cost:35000,days:3},
+  {id:'quebec',name:'Quebec City',em:'🏰',hl:'Old Quebec เมืองฝรั่งเศสในแคนาดา Winter Carnival',energy:2,cost:28000,days:2},
+ ]},
+
+{id:'mexico',cont:'americas',sub:'North America',name:'Mexico',flag:'🇲🇽',
+ desc:'อารยธรรม Maya Aztec อาหารดี ชายหาด',
+ energy:2,cost:80000,cold:false,walk:true,risk:3,wow:3,
+ best:'พ.ย.-เม.ย. (แล้ง)',
+ tags:['history','culture','food','nature'],
+ hl:['Chichen Itza Maya','Tulum ชายหาด','Mexico City วัฒนธรรม','Cenote ว่ายน้ำ'],
+ cities:[
+  {id:'mexicocity',name:'Mexico City',em:'🏛️',hl:'Teotihuacan Pyramid Frida Kahlo Museum',energy:2,cost:20000,days:3},
+  {id:'tulum',name:'Tulum',em:'🌊',hl:'ปิรามิด Maya ริมทะเล Cenote หาดสวย',energy:2,cost:22000,days:3},
+  {id:'oaxaca',name:'Oaxaca',em:'🌮',hl:'อาหารดีที่สุด Mole Monte Alban Indigenous',energy:2,cost:16000,days:2},
+ ]},
+
+{id:'peru',cont:'americas',sub:'South America',name:'Peru',flag:'🇵🇪',
+ desc:'Inca Machu Picchu Amazon Lake Titicaca',
+ energy:4,cost:180000,cold:false,walk:true,risk:2,wow:5,
+ best:'พ.ค.-ต.ค. (แล้ง)',
+ tags:['history','adventure','nature'],
+ hl:['Machu Picchu มหัศจรรย์โลก','Lake Titicaca 3800m','Amazon Jungle','Cusco เมือง Inca'],
+ cities:[
+  {id:'cusco',name:'Cusco',em:'🏛️',hl:'เมือง Inca Sacsayhuaman Plaza de Armas',energy:3,cost:20000,days:2},
+  {id:'machupicchu',name:'Machu Picchu',em:'🏔️',hl:'1 ใน 7 มหัศจรรย์โลก Inca Trail ยิ่งใหญ่',energy:5,cost:35000,days:2},
+  {id:'titicaca',name:'Lake Titicaca',em:'💧',hl:'ทะเลสาบสูงที่สุด เกาะลอย Uros',energy:2,cost:18000,days:2},
+ ]},
+
+{id:'chile',cont:'americas',sub:'South America',name:'Chile',flag:'🇨🇱',
+ desc:'Patagonia Torres del Paine Easter Island',
+ energy:4,cost:200000,cold:true,walk:true,risk:2,wow:5,
+ best:'พ.ย.-มี.ค. (Patagonia Summer)',
+ tags:['nature','adventure'],
+ hl:['Torres del Paine Trekking','Easter Island Moai','Atacama Desert','ธรรมชาติสุดขอบโลก'],
+ cities:[
+  {id:'patagoniachile',name:'Torres del Paine',em:'🏔️',hl:'W Trek O Trek ธรรมชาติสุดขอบโลก',energy:5,cost:60000,days:7},
+  {id:'easterisland',name:'Easter Island',em:'🗿',hl:'Moai 900 รูปปั้น ปริศนา ห่างไกล unique',energy:2,cost:45000,days:3},
+  {id:'atacama',name:'Atacama Desert',em:'⭐',hl:'ทะเลทรายแห้งที่สุด Stargazing Geysers',energy:2,cost:30000,days:3},
+ ]},
+
+{id:'argentina',cont:'americas',sub:'South America',name:'Argentina',flag:'🇦🇷',
+ desc:'Buenos Aires Tango Patagonia Iguazu',
+ energy:3,cost:150000,cold:false,walk:false,risk:2,wow:4,
+ best:'พ.ย.-มี.ค. (ฤดูร้อน)',
+ tags:['culture','nature','food','adventure'],
+ hl:['Iguazu Falls น้ำตกยิ่งใหญ่','Buenos Aires Tango','Patagonia Bariloche','Mendoza ไวน์'],
+ cities:[
+  {id:'buenosaires',name:'Buenos Aires',em:'💃',hl:'Tango San Telmo Recoleta Cemetery',energy:2,cost:30000,days:3},
+  {id:'iguazu',name:'Iguazu Falls',em:'💧',hl:'น้ำตกที่ยิ่งใหญ่ที่สุด กว้าง 2.7km',energy:2,cost:25000,days:2},
+  {id:'bariloche',name:'Bariloche',em:'🏔️',hl:'Patagonia Lake Hiking ช็อกโกแลต',energy:3,cost:30000,days:3},
+ ]},
+
+{id:'ecuador_g',cont:'americas',sub:'South America',name:'Ecuador / Galapagos',flag:'🇪🇨',
+ desc:'Galapagos สัตว์หายาก',
+ energy:2,cost:260000,cold:false,walk:false,risk:1,wow:5,
+ best:'มิ.ย.-ก.ย. (Dry)',
+ tags:['nature','adventure'],
+ hl:['Galapagos สัตว์ที่หาไม่ได้ที่ไหน','Giant Tortoise','Blue-footed Booby','Darwin Research'],
+ cities:[
+  {id:'galapagos',name:'Galapagos Islands',em:'🐢',hl:'เต่ายักษ์ นกบูบี้ สิงโตทะเล Snorkel Dive',energy:2,cost:200000,days:7},
+  {id:'quito',name:'Quito',em:'🏙️',hl:'Old Town UNESCO Middle of the World Monument',energy:2,cost:15000,days:1},
+ ]},
+
+// ── AFRICA ──
+{id:'morocco',cont:'africa',sub:'North Africa',name:'Morocco',flag:'🇲🇦',
+ desc:'ตลาด Medina ทะเลทราย Berber',
+ energy:2,cost:65000,cold:false,walk:true,risk:2,wow:3,
+ best:'มี.ค.-พ.ค. / ก.ย.-พ.ย.',
+ tags:['culture','food','adventure'],
+ hl:['Marrakech Jemaa el-Fnaa','Sahara Desert Camp','Fes Medina ซับซ้อน','Atlas Mountains'],
+ cities:[
+  {id:'marrakech',name:'Marrakech',em:'🧣',hl:'Jemaa el-Fnaa Souks Bahia Palace ตลาด',energy:2,cost:18000,days:3},
+  {id:'fes',name:'Fes',em:'🏺',hl:'Medina ซับซ้อนที่สุด Tanneries Bou Inania',energy:2,cost:15000,days:2},
+  {id:'sahara_m',name:'Sahara Desert',em:'🏜️',hl:'ทะเลทราย Sahara ขี่อูฐ Camp ดาว',energy:2,cost:18000,days:2},
+ ]},
+
+{id:'egypt',cont:'africa',sub:'North Africa',name:'Egypt',flag:'🇪🇬',
+ desc:'ฟาโรห์ ปิรามิด อารยธรรม 5000 ปี',
+ energy:2,cost:75000,cold:false,walk:true,risk:2,wow:5,
+ best:'ต.ค.-เม.ย.',
+ tags:['history','culture'],
+ hl:['Pyramids of Giza มหัศจรรย์โลก','Sphinx','Luxor Temple','ล่องเรือไนล์'],
+ cities:[
+  {id:'cairo',name:'Cairo',em:'🛕',hl:'Pyramids Sphinx Egyptian Museum Khan el-Khalili',energy:2,cost:20000,days:3},
+  {id:'luxor',name:'Luxor',em:'⚱️',hl:'Valley of the Kings Karnak Temple Luxor Temple',energy:2,cost:18000,days:2},
+  {id:'redsea_e',name:'Red Sea',em:'🤿',hl:'Hurghada Sharm Snorkel Dive ปะการังทะเลแดง',energy:2,cost:20000,days:3},
+ ]},
+
+{id:'tanzania',cont:'africa',sub:'East Africa',name:'Tanzania',flag:'🇹🇿',
+ desc:'Safari Great Migration Kilimanjaro Zanzibar',
+ energy:3,cost:280000,cold:false,walk:false,risk:2,wow:5,
+ best:'มิ.ย.-ต.ค. (Great Migration)',
+ tags:['nature','adventure'],
+ hl:['Serengeti Great Migration','Big Five Safari','Kilimanjaro 5895m','Zanzibar ชายหาด'],
+ cities:[
+  {id:'serengeti',name:'Serengeti',em:'🦁',hl:'Great Migration Safari Big Five Maasai',energy:2,cost:100000,days:4},
+  {id:'zanzibar',name:'Zanzibar',em:'🏝️',hl:'Stone Town ชายหาดขาว Spice Tour Snorkel',energy:1,cost:25000,days:3},
+  {id:'kilimanjaro',name:'Kilimanjaro',em:'⛰️',hl:'Trek 7 วัน จุดสูงสุด Africa 5895m',energy:5,cost:80000,days:8},
+ ]},
+
+{id:'kenya',cont:'africa',sub:'East Africa',name:'Kenya',flag:'🇰🇪',
+ desc:'Masai Mara Safari มีชื่อเสียงที่สุด',
+ energy:2,cost:250000,cold:false,walk:false,risk:2,wow:5,
+ best:'ก.ค.-ต.ค. (Great Migration)',
+ tags:['nature','adventure'],
+ hl:['Masai Mara Big Five','Great Migration ที่ดีที่สุด','Amboseli Kilimanjaro View','Balloon Safari'],
+ cities:[
+  {id:'masaimara',name:'Masai Mara',em:'🦒',hl:'Safari Big Five Wildebeest Migration Balloon',energy:2,cost:120000,days:4},
+  {id:'nairobi',name:'Nairobi',em:'🏙️',hl:'Giraffe Centre Elephant Orphanage Karen Blixen',energy:2,cost:20000,days:1},
+ ]},
+
+{id:'southafrica',cont:'africa',sub:'Southern Africa',name:'South Africa',flag:'🇿🇦',
+ desc:'Cape Town Table Mountain Wine Safari',
+ energy:2,cost:120000,cold:false,walk:false,risk:3,wow:4,
+ best:'ต.ค.-เม.ย. (ฤดูร้อน)',
+ tags:['nature','city','adventure'],
+ hl:['Table Mountain Cape Town','Garden Route ชายฝั่ง','Kruger Safari','Cape of Good Hope'],
+ cities:[
+  {id:'capetown',name:'Cape Town',em:'🏔️',hl:'Table Mountain Boulders Beach Penguin Wine Farms',energy:2,cost:35000,days:4},
+  {id:'kruger',name:'Kruger',em:'🦁',hl:'Big Five Safari ไม่ต้องออกแรง เห็นสัตว์มาก',energy:2,cost:40000,days:3},
+ ]},
+
+{id:'namibia',cont:'africa',sub:'Southern Africa',name:'Namibia',flag:'🇳🇦',
+ desc:'ทะเลทรายสีส้ม Sossusvlei ฝูงสัตว์',
+ energy:2,cost:150000,cold:false,walk:false,risk:1,wow:5,
+ best:'พ.ค.-ต.ค.',
+ tags:['nature','adventure'],
+ hl:['Sossusvlei ทราย Dune 45','Etosha NP Wildlife','ทิวทัศน์ unique ที่สุด'],
+ cities:[
+  {id:'sossusvlei',name:'Sossusvlei',em:'🏜️',hl:'Dune 45 Dead Vlei ทราย Sunrise สวยมาก',energy:3,cost:40000,days:2},
+  {id:'etosha',name:'Etosha NP',em:'🐘',hl:'Safari Elephant Rhino Lion Water Hole',energy:1,cost:40000,days:2},
+ ]},
+
+// ── OCEANIA ──
+{id:'australia',cont:'oceania',sub:'Oceania',name:'Australia',flag:'🇦🇺',
+ desc:'Sydney Great Barrier Reef Outback',
+ energy:2,cost:180000,cold:false,walk:false,risk:1,wow:4,
+ best:'ก.ย.-พ.ย. / มี.ค.-พ.ค.',
+ tags:['nature','city','adventure'],
+ hl:['Great Barrier Reef ปะการัง','Sydney Opera House','Uluru หินศักดิ์สิทธิ์','Whitsundays'],
+ cities:[
+  {id:'sydney',name:'Sydney',em:'🦘',hl:'Opera House Harbour Bridge Bondi Beach Blue Mts',energy:2,cost:45000,days:4},
+  {id:'gbr',name:'Great Barrier Reef',em:'🐠',hl:'ปะการัง Snorkel Dive Cairns Whitsundays',energy:2,cost:40000,days:3},
+  {id:'uluru',name:'Uluru',em:'🟥',hl:'Ayers Rock หินศักดิ์สิทธิ์ Outback',energy:2,cost:30000,days:2},
+  {id:'melbourne',name:'Melbourne',em:'☕',hl:'Coffee ดีที่สุด Street Art Great Ocean Road',energy:2,cost:35000,days:3},
+ ]},
+
+{id:'newzealand',cont:'oceania',sub:'Oceania',name:'New Zealand',flag:'🇳🇿',
+ desc:'Hobbiton Milford Sound ธรรมชาติสมบูรณ์',
+ energy:3,cost:180000,cold:false,walk:true,risk:1,wow:5,
+ best:'พ.ย.-มี.ค. (ฤดูร้อน)',
+ tags:['nature','adventure'],
+ hl:['Milford Sound','Hobbiton Lord of the Rings','Queenstown Adventure Capital','Tongariro'],
+ cities:[
+  {id:'queenstown',name:'Queenstown',em:'🏔️',hl:'Bungee Skydive Jet Boat Milford Sound',energy:3,cost:45000,days:4},
+  {id:'hobbiton',name:'Hobbiton',em:'🧙',hl:'Lord of the Rings Set ฟาร์มแกะ Matamata',energy:1,cost:15000,days:1},
+  {id:'rotorua',name:'Rotorua',em:'♨️',hl:'Geothermal Maori Culture Zorbing Mud Pool',energy:2,cost:22000,days:2},
+ ]},
+
+{id:'frenchpoly',cont:'oceania',sub:'Pacific',name:'French Polynesia',flag:'🇵🇫',
+ desc:'Bora Bora Water Villa สวรรค์บนดิน',
+ energy:1,cost:280000,cold:false,walk:false,risk:1,wow:5,
+ best:'พ.ค.-ต.ค. (แล้ง)',
+ tags:['luxury','slow travel','nature'],
+ hl:['Bora Bora Water Bungalow','น้ำทะเลฟ้าใสสวยที่สุด','Shark/Ray feeding','Moorea เกาะสวย'],
+ cities:[
+  {id:'borabora',name:'Bora Bora',em:'🌺',hl:'Over Water Bungalow Lagoon Shark Feeding Sunset',energy:1,cost:200000,days:5},
+  {id:'moorea',name:'Moorea',em:'🏔️',hl:'เกาะภูเขาสวย Snorkel เดินป่า เงียบกว่า Bora Bora',energy:2,cost:60000,days:3},
+ ]},
+
+// ── POLAR ──
+{id:'antarctica',cont:'polar',sub:'Antarctica',name:'Antarctica',flag:'🐧',
+ desc:'ดินแดนสุดท้ายของโลก',
+ energy:2,cost:500000,cold:true,walk:false,risk:2,wow:5,
+ best:'พ.ย.-มี.ค.',
+ tags:['nature','adventure'],
+ hl:['Penguin Colony','Iceberg ภูเขาน้ำแข็ง','Zodiac boat expedition','ประสบการณ์หาไม่ได้ที่ไหน'],
+ cities:[
+  {id:'antpen',name:'Antarctic Peninsula',em:'🐧',hl:'Cruise Zodiac Penguin Iceberg Drake Passage',energy:2,cost:500000,days:12},
+ ]},
+
+{id:'arctic',cont:'polar',sub:'Arctic',name:'Arctic Circle',flag:'🌌',
+ desc:'แสงเหนือ Reindeer Husky',
+ energy:2,cost:160000,cold:true,walk:false,risk:1,wow:5,
+ best:'ธ.ค.-มี.ค. (แสงเหนือ)',
+ tags:['nature','adventure'],
+ hl:['Northern Lights Aurora Borealis','Husky Sled','Snowmobile','Ice Hotel','Sami Reindeer'],
+ cities:[
+  {id:'lapland',name:'Finnish Lapland',em:'🦌',hl:'Santa Claus Village Rovaniemi Husky Aurora',energy:2,cost:70000,days:3},
+  {id:'tromso_a',name:'Tromso Norway',em:'🌌',hl:'Aurora Borealis Whale Watching Dog Sled',energy:2,cost:70000,days:3},
+ ]},
+];
+
+// Custom user destinations
+let CUSTOM = [];
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const load = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } };
+
+let PROFILE = load('ltbp3_profile', {
+  name: '', age: 40, activeUntil: 65,
+  styles: [], constraints: [], past: [],
+  phases: [
+    {fromAge: 40, toAge: 50, budget: 150000, days: 20},
+    {fromAge: 50, toAge: 60, budget: 120000, days: 25},
+    {fromAge: 60, toAge: 75, budget: 100000, days: 30},
+  ]
+});
+
+// SEL: { [countryId]: { on: bool, cities: { [cityId]: bool } } }
+let SEL = load('ltbp3_sel', {});
+
+let PLAN = load('ltbp3_plan', []);
+let PLAN_GEN = PLAN.length > 0;
+let APP = { page: 'explore', cont: 'asia', expanded: null, planNote: load('ltbp3_note', ''), planExplain: '', planView: 'table' };
+
+let TRIP_GROUPS = load('ltbp3_groups', []);
+// Pre-populate South America Grand Trip if not stored yet
+if (!TRIP_GROUPS.find(g => g.id === 'south_america_grand')) {
+  TRIP_GROUPS.push({
+    id: 'south_america_grand',
+    name: '🌎 South America Grand Trip',
+    countries: ['ecuador_g', 'peru', 'chile', 'argentina'],
+    totalDays: 43, budget: 300000,
+    bestSeason: 'Oct–Dec หรือ Feb–Mar', energy: 4,
+    notes: 'บินเข้า Quito · บินออก Buenos Aires · เส้นทางเหนือลงใต้',
+    stops: [
+      { flag:'🇪🇨', country:'Ecuador', city:'Quito',            days:2, highlight:'เมืองเก่า UNESCO ตลาด Otavalo' },
+      { flag:'🇪🇨', country:'Ecuador', city:'Galapagos Islands', days:8, highlight:'Cruise เต่ายักษ์ นกบูบี้ สิงโตทะเล' },
+      { flag:'🇵🇪', country:'Peru',    city:'Lima',             days:2, highlight:'อาหารระดับโลก Miraflores' },
+      { flag:'🇵🇪', country:'Peru',    city:'Cusco',            days:2, highlight:'เมืองอินคา acclimatize ก่อนขึ้นที่สูง' },
+      { flag:'🇵🇪', country:'Peru',    city:'Machu Picchu',     days:2, highlight:'วิหารอินคา มรดกโลก UNESCO' },
+      { flag:'🇵🇪', country:'Peru',    city:'Sacred Valley',    days:1, highlight:'Pisac Ollantaytambo ตลาดพื้นเมือง' },
+      { flag:'🇵🇪', country:'Peru',    city:'Lake Titicaca',    days:2, highlight:'เกาะ Uros ชนพื้นเมือง ทะเลสาบสูงสุดในโลก' },
+      { flag:'🇧🇴', country:'Bolivia', city:'Copacabana',       days:1, highlight:'ริมทะเลสาบ Titicaca ฝั่ง Bolivia' },
+      { flag:'🇧🇴', country:'Bolivia', city:'La Paz',           days:2, highlight:'เมืองหลวงสูงสุด กระเช้า Mi Teleférico ตลาดแม่มด' },
+      { flag:'🇧🇴', country:'Bolivia', city:'Salar de Uyuni',   days:3, highlight:'ทะเลเกลือใหญ่สุด ท้องฟ้าสะท้อน Flamingo' },
+      { flag:'🇨🇱', country:'Chile',   city:'San Pedro de Atacama', days:4, highlight:'ทะเลทราย ดูดาว Valle de la Luna' },
+      { flag:'🇨🇱', country:'Chile',   city:'Santiago',         days:1, highlight:'แวะพัก transit' },
+      { flag:'🇨🇱', country:'Chile',   city:'Torres del Paine', days:5, highlight:'Trekking W-Circuit ภูเขาหินแกรนิต' },
+      { flag:'🇦🇷', country:'Argentina', city:'El Calafate',    days:3, highlight:'Perito Moreno Glacier ธารน้ำแข็งเดิน' },
+      { flag:'🇦🇷', country:'Argentina', city:'El Chaltén',     days:2, highlight:'Trekking Fitz Roy' },
+      { flag:'🇦🇷', country:'Argentina', city:'Buenos Aires',   days:3, highlight:'Tango La Boca สเต็กระดับโลก' },
+    ]
+  });
+  localStorage.setItem('ltbp3_groups', JSON.stringify(TRIP_GROUPS));
+}
+
+if (!TRIP_GROUPS.find(g => g.id === 'africa_grand')) {
+  TRIP_GROUPS.push({
+    id: 'africa_grand',
+    name: '🌍 Africa Grand Tour',
+    countries: ['morocco', 'tanzania', 'kenya', 'southafrica', 'namibia'],
+    totalDays: 14, budget: 715000,
+    bestSeason: 'มิ.ย.–ต.ค. (แห้ง ไม่ร้อนมาก)', energy: 3,
+    notes: 'บินเข้า Casablanca · บินออก Zanzibar · Morocco ทะเลทราย → Tanzania Safari → Zanzibar ทะเล',
+    stops: [
+      { flag:'🇲🇦', country:'Morocco', city:'Marrakech', days:2, highlight:'Medina · Djemaa el-Fna · Souks สีสัน' },
+      { flag:'🇲🇦', country:'Morocco', city:'Sahara Desert', days:1, highlight:'Erg Chebbi ขี่อูฐ · นอนกลางทะเลทราย · ดูดาว' },
+      { flag:'🇲🇦', country:'Morocco', city:'Fes', days:1, highlight:'Fes el-Bali · Tanneries · มรดกโลก UNESCO' },
+      { flag:'🇲🇦', country:'Morocco', city:'Chefchaouen', days:1, highlight:'Blue City เมืองสีฟ้า · ภาพถ่ายสวยที่สุด' },
+      { flag:'🇹🇿', country:'Tanzania', city:'Serengeti', days:3, highlight:'Great Migration · Safari สิงโต ช้าง ยีราฟ' },
+      { flag:'🇹🇿', country:'Tanzania', city:'Ngorongoro', days:1, highlight:'Crater ระบบนิเวศน์สมบูรณ์ · แรด ฮิปโป' },
+      { flag:'🇹🇿', country:'Tanzania', city:'Zanzibar', days:4, highlight:'Stone Town · ทะเลสีฟ้า · ดำน้ำ · Spice Tour' },
+    ]
+  });
+  localStorage.setItem('ltbp3_groups', JSON.stringify(TRIP_GROUPS));
+}
+
+// ── BEST MONTHS ──
+// Best months: 12–22°C + dry (no rainy season / typhoon / monsoon)
+const BEST_MONTHS = {
+  // Asia
+  japan:[3,4,5,10,11],      // spring & autumn; avoid Jun rainy + Jul-Sep typhoon
+  skorea:[4,5,9,10],        // spring & autumn; avoid Jun-Aug monsoon
+  taiwan:[11,12,1,2],       // cool & dry; avoid Mar-Jun humid + Jul-Sep typhoon
+  vietnam:[11,12,1,2],      // N.Vietnam cool-dry; avoid Oct typhoon + May-Sep monsoon
+  cambodia:[],              // always hot 30°C+
+  laos:[11,12,1,2],         // cool-dry season; avoid May-Oct monsoon
+  thailand:[],              // always 28-35°C, no 12-22°C window
+  myanmar:[12,1,2],         // cool-dry highlands; avoid May-Oct monsoon
+  indonesia:[],             // always 28-32°C
+  bhutan:[3,4,10,11],       // spring & autumn; avoid Jun-Aug monsoon
+  india:[10,11,12,1,2],     // N.India cool-dry; avoid Jun-Sep monsoon
+  jordan:[11,12,1,2,3],     // mild desert winter; avoid Jul-Aug heat
+  mongolia:[6,7,8],         // short summer; avoid Apr dust storms + Oct-Mar bitter cold
+  uzbekistan:[4,5,9,10],    // spring & autumn; avoid Jun-Aug heat
+  // Oceania (Southern Hemisphere seasons)
+  newzealand:[10,11,4,5],   // spring & autumn; avoid Jan-Mar cyclone risk
+  australia:[9,10,11,4,5],  // S.Australia spring & autumn; avoid Dec-Mar cyclone (north)
+  // Europe
+  france:[4,5,6,9,10],      // spring & autumn; avoid Nov-Mar cold rain
+  portugal:[3,4,5,9,10],    // spring & autumn; avoid Nov-Feb rainy season
+  spain:[4,5,10,11],        // spring & autumn; avoid Jun-Sep heat
+  italy:[4,5,6,9,10],       // spring & autumn; avoid Jul-Aug heat
+  greece:[4,5,10,11],       // spring & autumn; avoid Jul-Aug heat
+  croatia:[5,6,9,10],       // spring & autumn; avoid Jul-Aug heat & crowds
+  switzerland:[5,6,9,10],   // spring & autumn; avoid Jul-Aug heat in valleys
+  uk:[5,6,7,8,9],           // mild summer; least rain May-Sep
+  norway:[6,7,8],           // summer; only warm window, avoid Oct-Apr cold
+  iceland:[6,7,8],          // summer only; avoid storms Oct-Apr
+  sweden:[6,7,8],           // summer; avoid Oct-Apr cold
+  denmark:[5,6,7,8,9],      // late spring to early autumn
+  germany:[5,6,9,10],       // spring & autumn; avoid Jul-Aug humidity
+  hungary:[4,5,9,10],       // spring & autumn; avoid Jul-Aug heat
+  poland:[5,6,9],           // late spring & early autumn; avoid Jul-Aug humidity
+  // Americas
+  usa:[4,5,10],             // spring & early autumn; avoid Jun-Nov hurricane season (south-east)
+  canada:[6,7,8,9],         // summer; avoid May-Jun flood season + Oct-Apr cold
+  mexico:[11,12,1,2,3],     // dry season highlands; avoid Jun-Oct hurricane season
+  peru:[5,6,7,8,9],         // dry season at altitude; avoid Nov-Apr rainy season
+  chile:[9,10,11,4,5],      // S.spring & autumn; avoid Jan-Feb peak heat
+  argentina:[9,10,11,4,5],  // S.spring & autumn; avoid Jan-Feb heat + Dec-Mar flood risk
+  ecuador_g:[6,7,8,9,10,11],// drier & cooler Galápagos season; avoid Jan-May warm rains
+  bolivia:[5,6,7,8,9],      // dry season at altitude; avoid Nov-Apr rainy season
+  // Africa
+  morocco:[3,4,10,11],      // spring & autumn; avoid Jun-Aug heat + Dec-Feb cold & rain
+  egypt:[11,12,1,2],        // cool & dry; avoid Mar-May khamsin sandstorms + Jun-Sep heat
+  tanzania:[6,7,8,9],       // long dry season; avoid Mar-May long rains + Nov-Dec short rains
+  kenya:[7,8,9],            // peak dry season; avoid Apr-Jun long rains + Oct-Nov short rains
+  southafrica:[9,10,4,5],   // Cape spring & autumn; avoid Dec-Feb heat + Jun-Aug cold rain (Cape)
+  namibia:[5,6,7,8],        // cool-dry season; avoid Nov-Apr rainy season
+  antarctica:[],            // never reaches 12°C
+};
+
+function tripBestMonths(trip) {
+  const allM = trip.items.flatMap(i => BEST_MONTHS[i.country.id] || []);
+  if (trip.items.length === 1) return [...new Set(allM)].sort((a,b)=>a-b);
+  const sets = trip.items.map(i => new Set(BEST_MONTHS[i.country.id] || []));
+  const overlap = [1,2,3,4,5,6,7,8,9,10,11,12].filter(m => sets.every(s => s.has(m)));
+  return overlap.length ? overlap : [...new Set(allM)].sort((a,b)=>a-b);
+}
+
+function renderMonths(months) {
+  const TH = ['ม.ค','ก.พ','มี.ค','เม.ย','พ.ค','มิ.ย','ก.ค','ส.ค','ก.ย','ต.ค','พ.ย','ธ.ค'];
+  const set = new Set(months);
+  return '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:2px;width:84px">' +
+    TH.map((m,i) => `<div title="${m}" style="text-align:center;font-size:8px;font-weight:700;line-height:14px;border-radius:3px;background:${set.has(i+1)?'#5CB88A':'#EDE5DC'};color:${set.has(i+1)?'#fff':'#B0A89E'}">${i+1}</div>`).join('') +
+  '</div>';
+}
+
+function save() {
+  localStorage.setItem('ltbp3_profile', JSON.stringify(PROFILE));
+  localStorage.setItem('ltbp3_sel', JSON.stringify(SEL));
+  localStorage.setItem('ltbp3_plan', JSON.stringify(PLAN));
+  localStorage.setItem('ltbp3_note', APP.planNote);
+}
+
+function exportData() {
+  save();
+  const data = { profile: PROFILE, sel: SEL, plan: PLAN, planNote: APP.planNote, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'life-travel-plan-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const btn = document.querySelector('[onclick="exportData()"]');
+  if (btn) {
+    btn.textContent = '✓ บันทึกแล้ว!';
+    btn.style.background = 'linear-gradient(135deg,#5CB88A,#3D9A6C)';
+    btn.style.color = '#fff';
+    setTimeout(() => { btn.textContent = '💾 Save ข้อมูล'; btn.style.background = ''; btn.style.color = ''; }, 2200);
+  }
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d.profile) PROFILE = d.profile;
+      if (d.sel) SEL = d.sel;
+      if (d.plan) { PLAN = d.plan; PLAN_GEN = PLAN.length > 0; }
+      if (d.planNote !== undefined) APP.planNote = d.planNote;
+      save();
+      renderSidebar();
+      renderPage();
+      showToast('✓ โหลดข้อมูลสำเร็จ!', '#5CB88A');
+    } catch {
+      showToast('❌ ไฟล์ไม่ถูกต้อง', '#C45A7A');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const fmt = n => { if (!n) return '0'; if (n >= 1e6) return (n/1e6).toFixed(1)+'M'; if (n >= 1e3) return Math.round(n/1e3)+'K'; return String(n); };
+
+function updateSlider(el) {
+  const min = +el.min || 0, max = +el.max || 100, val = +el.value;
+  el.style.setProperty('--pct', ((val - min) / (max - min) * 100) + '%');
+  const disp = document.getElementById(el.id + '_disp');
+  if (!disp) return;
+  const fmt2 = el.dataset.fmt;
+  if (fmt2 === 'budget') disp.textContent = '฿' + fmt(val);
+  else if (fmt2 === 'days') disp.textContent = val + ' วัน';
+  else if (fmt2 === 'age') disp.textContent = val + ' ปี';
+  else disp.textContent = val;
+}
+
+function stars(n) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    const filled = n >= i ? '#F5C842' : n >= i - 0.5 ? '#F5C84288' : '#DDD';
+    s += `<span style="color:${filled};font-size:15px;text-shadow:${filled!=='#DDD'?'0 0 4px #F5C84255':''}">${n >= i - 0.5 ? '★' : '☆'}</span>`;
+  }
+  return s + `<span style="font-size:10px;color:#9E918A;margin-left:3px;vertical-align:middle">${n.toFixed(1)}</span>`;
+}
+
+function energyDots(e) {
+  return [1,2,3,4,5].map(i => `<span class="edot ${i<=e?'on':'off'}"></span>`).join('');
+}
+
+function getCurrentPhase() {
+  const phases = PROFILE.phases || [];
+  for (const p of phases) {
+    if (PROFILE.age >= p.fromAge && PROFILE.age < p.toAge) return p;
+  }
+  return phases[0] || { budget: 150000, days: 20 };
+}
+
+function getPhaseForAge(age) {
+  const phases = PROFILE.phases || [];
+  for (const p of phases) {
+    if (age >= p.fromAge && age < p.toAge) return p;
+  }
+  return phases[phases.length - 1] || { budget: 100000, days: 20 };
+}
+
+// ═══════════════════════════════════════════════════
+//  AI FIT SCORING
+// ═══════════════════════════════════════════════════
+function fitScore(country) {
+  let score = 0;
+  const phase = getCurrentPhase();
+  const yearsActive = Math.max(1, (PROFILE.activeUntil || 65) - (PROFILE.age || 40));
+  const styles = PROFILE.styles || [];
+  const cons = PROFILE.constraints || [];
+
+  // Style match (up to 2 pts)
+  const matched = (country.tags || []).filter(t => styles.includes(t));
+  score += Math.min(matched.length * 0.5, 2);
+
+  // Budget fit
+  const budget = phase.budget || 150000;
+  if (country.cost <= budget * 0.7) score += 1;
+  else if (country.cost <= budget) score += 0.5;
+  else if (country.cost > budget * 1.5) score -= 0.5;
+
+  // Energy vs years
+  if (country.energy <= 2) score += 0.5;
+  if (country.energy >= 4 && yearsActive <= 15) score += 0.5; // urgent
+  if (country.energy >= 4 && yearsActive <= 5) score -= 0.5;
+
+  // Wow factor
+  score += country.wow * 0.2;
+
+  // Constraint penalties
+  if (cons.includes('cold') && country.cold) score -= 1.5;
+  if (cons.includes('walk') && country.walk && country.energy >= 3) score -= 1;
+  if (cons.includes('risk') && country.risk >= 3) score -= 0.8;
+
+  return Math.min(5, Math.max(0, Math.round(score * 2) / 2));
+}
+
+// ═══════════════════════════════════════════════════
+//  SELECTION HELPERS
+// ═══════════════════════════════════════════════════
+function isSelected(cid) {
+  return SEL[cid] && (SEL[cid].on || Object.values(SEL[cid].cities || {}).some(Boolean));
+}
+
+function toggleCountry(cid) {
+  if (!SEL[cid]) SEL[cid] = { on: false, cities: {} };
+  SEL[cid].on = !SEL[cid].on;
+  const c = allDB().find(d => d.id === cid);
+  // sync all cities to match country toggle
+  if (c) c.cities.forEach(city => { SEL[cid].cities[city.id] = SEL[cid].on; });
+  if (!SEL[cid].on) delete SEL[cid];
+  save(); renderPage();
+}
+
+function toggleCity(cid, cityId) {
+  if (!SEL[cid]) SEL[cid] = { on: false, cities: {} };
+  if (!SEL[cid].cities) SEL[cid].cities = {};
+  SEL[cid].cities[cityId] = !SEL[cid].cities[cityId];
+  SEL[cid].on = Object.values(SEL[cid].cities).some(Boolean);
+  save(); renderPage();
+}
+
+function removeFromPicks(cid) {
+  delete SEL[cid];
+  save(); renderPage();
+}
+
+function allDB() { return [...DB, ...CUSTOM]; }
+
+function picksCount() {
+  return Object.keys(SEL).filter(k => isSelected(k)).length;
+}
+
+// ═══════════════════════════════════════════════════
+//  PLANNING ENGINE
+// ═══════════════════════════════════════════════════
+function generatePlan(instOverride) {
+  const currentYear = new Date().getFullYear();
+  const inst = instOverride || parsePlanNote();
+  const items = [];
+
+  Object.keys(SEL).forEach(cid => {
+    if (!isSelected(cid)) return;
+    const country = allDB().find(d => d.id === cid);
+    if (!country) return;
+    const selCities = Object.keys(SEL[cid].cities || {}).filter(ctyId => SEL[cid].cities[ctyId])
+      .map(ctyId => country.cities.find(c => c.id === ctyId)).filter(Boolean);
+    items.push({ country, cities: selCities });
+  });
+
+  // Sort: prioritize user-mentioned countries first, then by urgency
+  items.sort((a, b) => {
+    const ai = inst.prioritize.indexOf(a.country.id);
+    const bi = inst.prioritize.indexOf(b.country.id);
+    if (ai >= 0 && bi < 0) return -1;
+    if (bi >= 0 && ai < 0) return 1;
+    if (ai >= 0 && bi >= 0) return ai - bi;
+    return urgencyScore(b.country) - urgencyScore(a.country);
+  });
+
+  // Grouping rules
+  const CONT_GROUP = ['africa'];           // ทุกประเทศในทวีป → 1 ทริป
+  const SUB_GROUP  = ['South America'];    // ทุกประเทศใน subregion → 1 ทริป
+  const MULTI_TRIP = ['japan', 'usa'];     // แบ่งเป็น 2 ทริป ถ้าเลือกเมือง ≥ 3
+
+  // Group by continent / subregion / country
+  const groups = {};
+  items.forEach(item => {
+    let key;
+    if (inst.separate || MULTI_TRIP.includes(item.country.id)) {
+      key = item.country.id;  // multi-trip countries always get own group
+    } else if (CONT_GROUP.includes(item.country.cont)) {
+      key = 'cont_' + item.country.cont;
+    } else if (SUB_GROUP.includes(item.country.sub)) {
+      key = 'sub_' + item.country.sub;
+    } else {
+      key = item.country.id;
+    }
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  let trips = Object.values(groups).map(grp => ({
+    items: grp,
+    sub: grp[0].country.sub,
+    cont: grp[0].country.cont,
+    totalCost: grp.reduce((s, i) => s + i.country.cost, 0),
+    totalDays: grp.reduce((s, i) => s + 10, 0),
+    maxEnergy: Math.max(...grp.map(i => i.country.energy)),
+  }));
+
+  // Expand multi-trip countries (Japan, USA) → 2 trips when ≥ 3 cities selected
+  const expanded = [];
+  trips.forEach(trip => {
+    const solo = trip.items.length === 1 ? trip.items[0] : null;
+    if (solo && MULTI_TRIP.includes(solo.country.id)) {
+      const { country } = solo;
+      const allC = solo.cities.length ? solo.cities : (country.cities || []);
+      if (allC.length >= 3) {
+        const half = Math.ceil(allC.length / 2);
+        const c1 = allC.slice(0, half);
+        const c2 = allC.slice(half);
+        const days1 = Math.max(7, c1.reduce((s, c) => s + (c.days || 3), 0) + 2);
+        const days2 = Math.max(7, c2.reduce((s, c) => s + (c.days || 3), 0) + 2);
+        const cost1 = Math.round(country.cost * c1.length / allC.length);
+        expanded.push({ items:[{country, cities:c1}], sub:trip.sub, cont:trip.cont, totalCost:cost1, totalDays:days1, maxEnergy:trip.maxEnergy, vol:1 });
+        expanded.push({ items:[{country, cities:c2}], sub:trip.sub, cont:trip.cont, totalCost:country.cost-cost1, totalDays:days2, maxEnergy:trip.maxEnergy, vol:2 });
+        return;
+      }
+    }
+    expanded.push(trip);
+  });
+  trips = expanded;
+
+  const deferConts = inst.deferConts || [];
+  const deferMinAge = inst.deferMinAge || 60;
+  const fastConts = inst.fastConts || [];
+
+  // Sort: deferred continents last, then user priority, then energy
+  trips.sort((a, b) => {
+    const aDefer = deferConts.includes(a.cont);
+    const bDefer = deferConts.includes(b.cont);
+    if (aDefer && !bDefer) return 1;
+    if (bDefer && !aDefer) return -1;
+    const aP = inst.prioritize.some(id => a.items.some(i => i.country.id === id));
+    const bP = inst.prioritize.some(id => b.items.some(i => i.country.id === id));
+    if (aP && !bP) return -1;
+    if (bP && !aP) return 1;
+    const needsBefore60A = a.maxEnergy >= 4;
+    const needsBefore60B = b.maxEnergy >= 4;
+    if (needsBefore60A && !needsBefore60B) return -1;
+    if (!needsBefore60A && needsBefore60B) return 1;
+    return b.maxEnergy - a.maxEnergy;
+  });
+
+  // Assign years — 2 trips per year by default; long trips (>25 days) take full year
+  PLAN = [];
+  let year = currentYear;
+  let yearTripCount = 0;
+
+  trips.forEach(trip => {
+    // Deferred: fast-forward year until age >= deferMinAge
+    if (deferConts.includes(trip.cont)) {
+      const ageNow = PROFILE.age + (year - currentYear);
+      if (ageNow < deferMinAge) {
+        year = currentYear + Math.max(0, deferMinAge - PROFILE.age);
+        yearTripCount = 0;
+      }
+    }
+
+    const age = PROFILE.age + (year - currentYear);
+    const phase = getPhaseForAge(age);
+    const phaseBudget = phase.budget || 150000;
+
+    const warn = [];
+    if (trip.maxEnergy >= 4 && age >= 60) warn.push('⚠️ ทริปนี้ต้องการพลังงานสูง ควรไปก่อนอายุ 60');
+    if (trip.totalCost > phaseBudget * 1.3) warn.push('💸 งบอาจไม่พอ พิจารณาแบ่งทริป');
+
+    const combines = trip.items.length > 1
+      ? `🤖 รวมทริป: ${trip.items.map(i => i.country.name).join(' + ')} เพราะอยู่ในภูมิภาคเดียวกัน`
+      : null;
+
+    PLAN.push({ year, age, trip, phase, warn, combines, vol: trip.vol || null });
+
+    // Long trips (>25 days) take full year; otherwise pack 2 per year
+    if (trip.totalDays > 25) {
+      year += 1;
+      yearTripCount = 0;
+    } else {
+      yearTripCount++;
+      if (yearTripCount >= 2) {
+        yearTripCount = 0;
+        year += 1;
+      }
+    }
+  });
+
+  PLAN_GEN = true;
+  save();
+}
+
+function urgencyScore(country) {
+  const yearsActive = Math.max(1, (PROFILE.activeUntil || 65) - (PROFILE.age || 40));
+  let u = country.wow || 0;
+  if (country.energy >= 4) u += 5;
+  if (country.energy >= 4 && yearsActive <= 15) u += 5;
+  return u;
+}
+
+function movePlanItem(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= PLAN.length) return;
+  [PLAN[idx], PLAN[newIdx]] = [PLAN[newIdx], PLAN[idx]];
+  // Recalculate years
+  const currentYear = new Date().getFullYear();
+  let year = currentYear;
+  PLAN.forEach(entry => {
+    entry.year = year;
+    entry.age = PROFILE.age + (year - currentYear);
+    const phase = getPhaseForAge(entry.age);
+    entry.phase = phase;
+    year += Math.max(1, Math.ceil(entry.trip.totalDays / Math.max(phase.days || 20, 1)));
+    // recalc warn
+    entry.warn = [];
+    if (entry.trip.maxEnergy >= 4 && entry.age >= 60) entry.warn.push('⚠️ ทริปนี้ต้องการพลังงานสูง ควรไปก่อนอายุ 60');
+    if (entry.trip.totalCost > (phase.budget || 150000) * 1.3) entry.warn.push('💸 งบอาจไม่พอ พิจารณาแบ่งทริป');
+  });
+  save();
+  renderPage();
+}
+
+function editTrip(idx) {
+  const entry = PLAN[idx];
+  if (!entry) return;
+  const names = entry.trip.items.map(i => i.country.flag + ' ' + i.country.name).join(' + ');
+  const sameYearCount = PLAN.filter((e, i) => i !== idx && e.year === entry.year).length;
+  const warnHTML = sameYearCount >= 2
+    ? `<div style="font-size:11px;color:#C45A7A;margin-top:4px;padding:6px 10px;background:#FFE8EE;border-radius:8px">⚠️ ปีนี้มีทริปครบ 2 แล้ว กรุณาเลือกปีอื่น</div>` : '';
+  openM(`
+    <div class="mhdr">
+      <h3>✏️ แก้ไขทริป</h3>
+      <button class="xbtn" onclick="closeM()">✕</button>
+    </div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px;color:#3D3028">${names}</div>
+    <div class="fld">
+      <label>ปี (ไม่เกิน 2 ทริปต่อปี)</label>
+      <input class="inp" type="number" id="et_year" value="${entry.year}" min="${new Date().getFullYear()}" max="2100"
+        oninput="(function(v){const c=PLAN.filter((e,i)=>i!==${idx}&&e.year==+v).length;const w=document.getElementById('et_yearwarn');if(w)w.style.display=c>=2?'block':'none';})(this.value)">
+      <div id="et_yearwarn" style="font-size:11px;color:#C45A7A;margin-top:4px;padding:6px 10px;background:#FFE8EE;border-radius:8px;display:${sameYearCount>=2?'block':'none'}">⚠️ ปีนี้มีทริปครบ 2 แล้ว กรุณาเลือกปีอื่น</div>
+    </div>
+    <div class="fld">
+      <label>จำนวนวัน</label>
+      <input class="inp" type="number" id="et_days" value="${entry.trip.totalDays}" min="1" max="365">
+    </div>
+    <div class="fld">
+      <label>งบประมาณ (฿)</label>
+      <input class="inp" type="number" id="et_budget" value="${entry.trip.totalCost}" min="0" step="5000">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-p" onclick="saveTripEdit(${idx})">💾 บันทึก</button>
+      <button class="btn btn-g" onclick="closeM()">ยกเลิก</button>
+    </div>
+  `);
+}
+
+function saveTripEdit(idx) {
+  const entry = PLAN[idx];
+  if (!entry) return;
+  const year = parseInt(document.getElementById('et_year').value) || entry.year;
+  const days  = parseInt(document.getElementById('et_days').value)  || entry.trip.totalDays;
+  const budget = parseInt(document.getElementById('et_budget').value) || entry.trip.totalCost;
+  entry.year = year;
+  entry.age  = PROFILE.age + (year - new Date().getFullYear());
+  entry.trip.totalDays = days;
+  entry.trip.totalCost = budget;
+  // Re-sort by year (stable)
+  PLAN.sort((a, b) => a.year !== b.year ? a.year - b.year : 0);
+  save();
+  closeM();
+  renderPage();
+}
+
+function movePlanInYear(idx, dir) {
+  const year = PLAN[idx].year;
+  const inYear = PLAN.map((e,i) => ({e,i})).filter(x => x.e.year === year);
+  const pos = inYear.findIndex(x => x.i === idx);
+  const newPos = pos + dir;
+  if (newPos < 0 || newPos >= inYear.length) return;
+  const otherIdx = inYear[newPos].i;
+  [PLAN[idx], PLAN[otherIdx]] = [PLAN[otherIdx], PLAN[idx]];
+  save(); renderPage();
+}
+
+function duplicatePlan(idx) {
+  const clone = JSON.parse(JSON.stringify(PLAN[idx]));
+  clone.remark = '';
+  PLAN.splice(idx + 1, 0, clone);
+  save(); renderPage();
+}
+
+function removePlan(idx) {
+  PLAN.splice(idx, 1);
+  save(); renderPage();
+}
+
+function submitPlanEdits() {
+  const currentYear = new Date().getFullYear();
+  PLAN.forEach((entry, idx) => {
+    const y = parseInt((document.getElementById('et_year_'+idx)||{}).value) || entry.year;
+    const d = parseInt((document.getElementById('et_days_'+idx)||{}).value) || entry.trip.totalDays;
+    const b = parseInt((document.getElementById('et_budget_'+idx)||{}).value);
+    const r = ((document.getElementById('et_remark_'+idx)||{}).value) || '';
+    const p = (document.getElementById('et_places_'+idx)||{}).value;
+    entry.year = y;
+    entry.age  = PROFILE.age + (y - currentYear);
+    entry.trip.totalDays = d;
+    entry.trip.totalCost = isNaN(b) ? entry.trip.totalCost : b;
+    entry.remark = r;
+    if (p !== undefined) entry.places = p;
+  });
+  PLAN.sort((a, b) => a.year - b.year);
+  save(); renderPage();
+  showToast('✓ บันทึกแผนแล้ว!', '#5CB88A');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════
+function showTripDetail(idx) {
+  const entry = PLAN[idx];
+  if (!entry) return;
+  const countryIds = entry.trip.items.map(i => i.country.id);
+  const group = TRIP_GROUPS.find(g => countryIds.some(id => g.countries.includes(id)));
+  if (group) { showGroupDetail(group, entry); } else { showSingleDetail(entry); }
+}
+
+function showGroupDetail(group, entry) {
+  const stopsHTML = group.stops.map((s, i) => `
+    <tr style="border-bottom:1px solid #F0EBE5;${i%2===0?'background:#FDFAF7':''}">
+      <td style="padding:7px 8px;color:#9E918A;font-size:12px">${i+1}</td>
+      <td style="padding:7px 8px;white-space:nowrap">${s.flag} ${s.country}</td>
+      <td style="padding:7px 8px;font-weight:600;font-size:13px">${s.city}</td>
+      <td style="padding:7px 8px;text-align:center;color:#9B72D0;font-weight:700">${s.days}</td>
+      <td style="padding:7px 8px;font-size:12px;color:#6B5E54">${s.highlight}</td>
+    </tr>`).join('');
+
+  openM(`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:19px;color:#3D3028">${group.name}</div>
+        <div style="font-size:12px;color:#9E918A;margin-top:3px">ปี ${entry.year} · อายุ ${entry.age} ปี</div>
+      </div>
+      <button onclick="closeM()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9E918A;padding:0 4px">✕</button>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="background:#F0E8FF;color:#9B72D0;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">📅 ${group.totalDays} วัน</span>
+      <span style="background:#F0EBE5;color:#6B5E54;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">฿${fmt(group.budget)}</span>
+      <span style="background:#E8F4FF;color:#4A7FB5;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">🗓️ ${group.bestSeason}</span>
+      <span style="background:#FFF0E8;color:#E8956A;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">⚡ Energy ${group.energy}/5</span>
+    </div>
+
+    ${group.notes ? `<div style="font-size:12px;color:#9E918A;margin-bottom:12px;padding:8px 12px;background:#FFF8F0;border-radius:8px">✈️ ${group.notes}</div>` : ''}
+
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#F0EBE5">
+            <th style="padding:8px;text-align:left;font-size:11px;color:#6B5E54">#</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:#6B5E54">ประเทศ</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:#6B5E54">เมือง</th>
+            <th style="padding:8px;text-align:center;font-size:11px;color:#6B5E54">วัน</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:#6B5E54">ไฮไลต์</th>
+          </tr>
+        </thead>
+        <tbody>${stopsHTML}</tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #F0EBE5;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:12px;color:#9E918A">รวม ${group.stops.reduce((s,x)=>s+x.days,0)} วัน · ${group.stops.length} จุด</div>
+      <button class="btn btn-g btn-sm" onclick="closeM()">ปิด</button>
+    </div>
+  `);
+}
+
+function showSingleDetail(entry) {
+  const { year, age, trip, phase, warn } = entry;
+  const country = trip.items[0]?.country;
+  if (!country) return;
+  const citiesHTML = country.cities.map(c => `
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0EBE5;align-items:flex-start">
+      <span style="font-size:20px">${c.em}</span>
+      <div>
+        <div style="font-weight:700;font-size:13px">${c.name}</div>
+        <div style="font-size:12px;color:#6B5E54;margin-top:2px">${c.hl||''}</div>
+        <div style="font-size:11px;color:#9E918A;margin-top:2px">~${c.days||3} วัน</div>
+      </div>
+    </div>`).join('');
+
+  openM(`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div>
+        <div style="font-size:28px">${country.flag}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:19px;color:#3D3028">${country.name}</div>
+        <div style="font-size:12px;color:#9E918A;margin-top:2px">ปี ${year} · อายุ ${age} ปี</div>
+      </div>
+      <button onclick="closeM()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9E918A;padding:0 4px">✕</button>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="background:#F0E8FF;color:#9B72D0;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">~${trip.totalDays} วัน</span>
+      <span style="background:#F0EBE5;color:#6B5E54;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">฿${fmt(trip.totalCost)}</span>
+      <span style="background:#FFF0E8;color:#E8956A;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">⚡ Energy ${country.energy}/5</span>
+      ${country.best ? `<span style="background:#E8F4FF;color:#4A7FB5;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700">🗓️ ${country.best}</span>` : ''}
+    </div>
+
+    <div style="font-size:13px;color:#6B5E54;margin-bottom:12px">${country.desc||''}</div>
+
+    <div style="font-family:'Playfair Display',serif;font-size:14px;margin-bottom:8px">เมือง / สถานที่</div>
+    ${citiesHTML}
+
+    ${warn.length ? `<div style="margin-top:12px">${warn.map(w=>`<div style="background:#FFF0E8;border-radius:8px;padding:8px 12px;font-size:12px;color:#C45A7A;margin-bottom:4px">${w}</div>`).join('')}</div>` : ''}
+
+    <div style="margin-top:14px;text-align:right">
+      <button class="btn btn-g btn-sm" onclick="closeM()">ปิด</button>
+    </div>
+  `);
+}
+
+function showToast(msg, color) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:'+(color||'#9B72D0')+';color:#fff;padding:11px 24px;border-radius:24px;font-weight:700;font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:opacity .3s;font-family:Nunito,sans-serif';
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 300); }, 1800);
+}
+
+function openM(html) {
+  APP._scrollY = window.scrollY;
+  document.getElementById('ov').style.display = 'flex';
+  document.getElementById('ov').innerHTML = `<div class="mbox">${html}</div>`;
+}
+function closeM() {
+  document.getElementById('ov').style.display = 'none';
+  document.getElementById('ov').innerHTML = '';
+  if (APP._scrollY !== undefined) { window.scrollTo(0, APP._scrollY); APP._scrollY = undefined; }
+}
+
+function openAddCustom() {
+  openM(`
+    <div class="mhdr"><h3>➕ เพิ่มปลายทางเอง</h3><button class="xbtn" onclick="closeM()">✕</button></div>
+    <div class="fld"><label>ชื่อประเทศ / ปลายทาง</label><input class="inp" id="c_name" placeholder="เช่น Myanmar, Namibia"></div>
+    <div class="fld"><label>ธง Emoji (ไม่จำเป็น)</label><input class="inp" id="c_flag" placeholder="🌍" maxlength="4"></div>
+    <div class="fld"><label>ทวีป</label><select class="inp" id="c_cont">
+      ${CONTS.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
+    </select></div>
+    <div class="fld"><label>Highlights (คั่นด้วย ,)</label><input class="inp" id="c_hl" placeholder="ธรรมชาติสวย, อาหารดี, ราคาถูก"></div>
+    <div class="g2" style="gap:10px;margin-bottom:12px">
+      <div class="fld"><label>งบประมาณ (฿)</label><input class="inp" type="number" id="c_cost" placeholder="80000"></div>
+      <div class="fld"><label>Energy (1-5)</label><input class="inp" type="number" id="c_energy" min="1" max="5" placeholder="2"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-g" onclick="closeM()">ยกเลิก</button>
+      <button class="btn btn-p" onclick="saveCustom()">เพิ่ม ✓</button>
+    </div>
+  `);
+}
+
+function saveCustom() {
+  const name = document.getElementById('c_name').value.trim();
+  if (!name) return;
+  const id = 'custom_' + Date.now();
+  const hlStr = document.getElementById('c_hl').value;
+  CUSTOM.push({
+    id, cont: document.getElementById('c_cont').value, sub: 'Custom',
+    name, flag: document.getElementById('c_flag').value || '🌍',
+    desc: 'ปลายทางที่เพิ่มเอง',
+    energy: +document.getElementById('c_energy').value || 2,
+    cost: +document.getElementById('c_cost').value || 80000,
+    cold: false, walk: false, risk: 1, wow: 3,
+    best: '-', tags: [], cities: [],
+    hl: hlStr.split(',').map(s => s.trim()).filter(Boolean),
+  });
+  closeM(); renderPage();
+}
+
+// ═══════════════════════════════════════════════════
+//  SVG WORLD MAP
+// ═══════════════════════════════════════════════════
+function worldMapSVG() {
+  const contMap = {
+    americas: 'M30,22 L195,16 L252,68 L268,172 L252,232 L196,252 L138,242 L82,198 L45,155 Z M148,268 L268,258 L300,312 L302,378 L262,400 L210,402 L165,372 L140,328 Z',
+    europe:   'M335,22 L462,16 L498,62 L492,128 L452,152 L400,154 L355,130 L330,82 Z',
+    africa:   'M318,158 L498,144 L558,198 L554,332 L508,378 L448,388 L382,360 L328,288 L315,222 Z',
+    asia:     'M502,18 L875,14 L882,202 L820,240 L700,250 L605,248 L520,228 L495,182 Z',
+    oceania:  'M662,292 L825,278 L858,348 L842,402 L770,415 L692,390 L668,340 Z M825,355 L848,345 L860,378 L840,398 L822,390 Z',
+    polar:    'M80,408 L820,408 L820,420 L80,420 Z',
+  };
+
+  return `<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer">
+    <rect width="900" height="430" fill="#E8F4FF" rx="12"/>
+    ${CONTS.map(c => {
+      const d = contMap[c.id] || '';
+      const active = APP.cont === c.id;
+      const col = c.color;
+      const opacity = active ? 1 : 0.5;
+      return `<path d="${d}" fill="${col}" opacity="${opacity}" class="cont-shape"
+        onclick="setContinent('${c.id}')"
+        style="filter:${active ? 'drop-shadow(0 0 6px ' + col + ')' : 'none'}">
+        <title>${c.label}</title></path>`;
+    }).join('')}
+    <text x="120" y="140" font-size="11" fill="#fff" font-weight="bold" opacity="0.9" pointer-events="none">Americas</text>
+    <text x="395" y="85" font-size="11" fill="#fff" font-weight="bold" opacity="0.9" pointer-events="none">Europe</text>
+    <text x="395" y="265" font-size="11" fill="#fff" font-weight="bold" opacity="0.9" pointer-events="none">Africa</text>
+    <text x="650" y="120" font-size="11" fill="#fff" font-weight="bold" opacity="0.9" pointer-events="none">Asia</text>
+    <text x="730" y="355" font-size="11" fill="#fff" font-weight="bold" opacity="0.9" pointer-events="none">Oceania</text>
+    <text x="430" y="418" font-size="9" fill="#fff" font-weight="bold" opacity="0.8" pointer-events="none">Polar</text>
+  </svg>`;
+}
+
+function setContinent(id) { APP.cont = id; renderPage(); }
+
+// ═══════════════════════════════════════════════════
+//  PAGE: EXPLORE
+// ═══════════════════════════════════════════════════
+function pageExplore() {
+  const countries = allDB().filter(d => d.cont === APP.cont);
+  const activeCont = CONTS.find(c => c.id === APP.cont);
+
+  const tabsHTML = CONTS.map(c => {
+    const active = c.id === APP.cont;
+    const col = c.color;
+    return `<button class="ct" onclick="setContinent('${c.id}')"
+      style="border-color:${active ? col : '#EDE5DC'};background:${active ? col : '#fff'};color:${active ? '#fff' : '#6B5E54'}">
+      ${c.label}</button>`;
+  }).join('');
+
+  const cardsHTML = countries.map(c => {
+    const score = fitScore(c);
+    const sel = !!(SEL[c.id] && SEL[c.id].on);
+    const anySel = isSelected(c.id);
+    const expanded = APP.expanded === c.id;
+    const cityCount = c.cities ? c.cities.length : 0;
+    const yearsActive = Math.max(1,(PROFILE.activeUntil||65)-(PROFILE.age||40));
+    const urgent = c.energy >= 4 && yearsActive <= 15;
+    const phaseBudget = (getCurrentPhase()||{}).budget || 150000;
+    const overBudget = c.cost > phaseBudget * 1.4;
+
+    const cityListHTML = expanded && c.cities ? c.cities.map(city => {
+      const checked = SEL[c.id] && SEL[c.id].cities && SEL[c.id].cities[city.id];
+      const cityEnergy = [1,2,3,4,5].map(i=>`<span style="color:${i<=city.energy?'#9B72D0':'#EDE5DC'};font-size:10px">●</span>`).join('');
+      return `<div class="city-row">
+        <span class="city-em">${city.em}</span>
+        <div class="city-info">
+          <div class="city-name">${esc(city.name)} <span style="font-size:10px">${cityEnergy}</span></div>
+          <div class="city-hl">${esc(city.hl)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:11px;color:#E8956A;font-weight:600;margin-bottom:3px">+฿${fmt(city.cost)}</div>
+          <input type="checkbox" class="city-cb" ${checked ? 'checked' : ''}
+            onchange="toggleCity('${c.id}','${city.id}')">
+        </div>
+      </div>`;
+    }).join('') : '';
+
+    return `<div class="cc${anySel ? ' selected' : ''}">
+      <div class="cc-head">
+        <div class="cc-flag">${c.flag}</div>
+        <div class="cc-meta">
+          <div class="cc-name">${esc(c.name)}</div>
+          <div class="cc-sub" style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+            <span>${esc(c.sub)}</span>
+            ${urgent ? '<span class="badge" style="background:#F0E8FF;color:#9B72D0;font-size:10px">⚡ ด่วน</span>' : ''}
+            ${overBudget ? '<span class="badge" style="background:#FFE8EE;color:#C45A7A;font-size:10px">💸 เกินงบ</span>' : ''}
+          </div>
+          <div class="cc-stars">${stars(score)}</div>
+        </div>
+        <div style="margin-left:auto;flex-shrink:0">
+          <button class="btn btn-sm ${sel ? 'btn-g' : 'btn-p'}" onclick="toggleCountry('${c.id}')">
+            ${sel ? '✓ เพิ่มแล้ว' : '+ เพิ่ม'}</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#7B52B0;margin-bottom:6px;font-style:italic">${esc(c.desc)}</div>
+      <ul class="cc-hl">${c.hl.slice(0,4).map(h => `<li>${esc(h)}</li>`).join('')}</ul>
+      <div class="cc-foot">
+        <div class="energy-bar">${energyDots(c.energy)}</div>
+        <span style="font-size:11px;color:#9E918A;margin-left:4px">พลังงาน ${c.energy}/5</span>
+        <span style="font-size:13px;color:#E8956A;font-weight:700;margin-left:8px">฿${fmt(c.cost)}</span>
+      </div>
+      <div style="font-size:11px;color:#9E918A;margin-top:5px">📅 ${esc(c.best)}</div>
+      ${cityCount > 0 ? `
+        <button onclick="APP.expanded=APP.expanded==='${c.id}'?null:'${c.id}';renderPage()"
+          style="width:100%;margin-top:10px;padding:6px;border:none;background:#FFF8F0;border-radius:8px;font-size:12px;color:#9B72D0;cursor:pointer;font-weight:600;font-family:inherit">
+          ${expanded ? '▲ ซ่อนเมือง' : '▼ ดูเมือง ('+ cityCount +')'}</button>
+        ${expanded ? `<div class="city-list">${cityListHTML}</div>` : ''}
+      ` : ''}
+    </div>`;
+  }).join('');
+
+  const profileEmpty = !PROFILE.name && !(PROFILE.styles||[]).length;
+  const welcomeBanner = profileEmpty ? `
+    <div style="background:linear-gradient(135deg,#F0E8FF,#E8F4FF);border-radius:16px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+      <div style="font-size:32px">👤</div>
+      <div style="flex:1">
+        <div style="font-weight:700;color:#7B52B0;margin-bottom:3px">ยังไม่ได้ตั้งค่า Profile</div>
+        <div style="font-size:13px;color:#9B72D0">ตั้งค่าอายุ งบ และสไตล์การเดินทาง เพื่อให้ AI คะแนนได้ตรงกว่านี้</div>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="nav('profile')">ตั้งค่า →</button>
+    </div>` : '';
+
+  return `
+    <div class="page-title">🌍 Explore Destinations</div>
+    <div class="page-sub">เลือกปลายทางที่อยากไป · AI ให้คะแนนตาม profile ของคุณ</div>
+
+    ${welcomeBanner}
+    <div class="map-wrap">${worldMapSVG()}</div>
+    <div class="cont-tabs">${tabsHTML}</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;color:#3D3028">
+        ${activeCont ? activeCont.label : ''} <span style="font-size:14px;color:#9E918A;font-family:'Nunito',sans-serif">(${countries.length} ประเทศ)</span>
+      </div>
+      <button class="btn btn-g btn-sm" onclick="openAddCustom()">➕ เพิ่มเอง</button>
+    </div>
+
+    <div class="country-grid">${cardsHTML || '<div style="color:#9E918A;padding:20px">ยังไม่มีข้อมูลทวีปนี้</div>'}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+//  PAGE: MY PICKS
+// ═══════════════════════════════════════════════════
+function pagePicks() {
+  const picked = Object.keys(SEL).filter(k => isSelected(k))
+    .map(k => ({ key: k, country: allDB().find(d => d.id === k), sel: SEL[k] }))
+    .filter(p => p.country);
+
+  if (!picked.length) return `
+    <div class="page-title">💫 My Picks</div>
+    <div class="page-sub">ยังไม่ได้เลือกปลายทาง</div>
+    <div class="card" style="text-align:center;padding:40px">
+      <div style="font-size:48px;margin-bottom:12px">🗺️</div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px">ยังไม่มีปลายทาง</div>
+      <div style="color:#9E918A;margin-bottom:20px">ไปที่ Explore เพื่อเลือกประเทศที่อยากไป</div>
+      <button class="btn btn-p" onclick="nav('explore')">🌍 ไปเลือกประเทศ</button>
+    </div>
+  `;
+
+  const cardsHTML = picked.map(({ key, country, sel }) => {
+    const score = fitScore(country);
+    const selCities = Object.keys(sel.cities || {}).filter(k => sel.cities[k])
+      .map(k => country.cities.find(c => c.id === k)).filter(Boolean);
+    const yearsActive = Math.max(1, (PROFILE.activeUntil || 65) - (PROFILE.age || 40));
+    const urgent = country.energy >= 4 && yearsActive <= 15;
+
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:36px;line-height:1">${country.flag}</div>
+        <div style="flex:1">
+          <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600">${esc(country.name)}</div>
+          <div style="font-size:12px;color:#9E918A;margin-bottom:6px">${esc(country.sub)}</div>
+          <div style="font-size:14px">${stars(score)}</div>
+          ${urgent ? '<span class="badge" style="background:#F0E8FF;color:#9B72D0;margin-top:4px">⚡ ควรไปก่อนอายุ 60</span>' : ''}
+          ${selCities.length > 0 ? `
+            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+              ${selCities.map(c => `<span class="badge" style="background:#F0EBE5;color:#6B5E54">${c.em} ${esc(c.name)}</span>`).join('')}
+            </div>` : ''}
+        </div>
+        <div style="flex-shrink:0;text-align:right">
+          <div style="font-size:14px;font-weight:700;color:#E8956A;margin-bottom:4px">฿${fmt(country.cost)}</div>
+          <div style="font-size:11px;color:#9E918A;margin-bottom:8px">Energy: ${country.energy}/5</div>
+          <button class="btn btn-g btn-sm" onclick="removeFromPicks('${key}')">✕ ลบ</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const totalEst = picked.reduce((s, p) => s + (p.country.cost || 0), 0);
+
+  return `
+    <div class="page-title">💫 My Picks</div>
+    <div class="page-sub">${picked.length} ปลายทาง · งบรวมประมาณ ฿${fmt(totalEst)}</div>
+
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn btn-p" onclick="runGeneratePlan()">📅 สร้าง Year Plan →</button>
+      <button class="btn btn-g btn-sm" onclick="nav('explore')">+ เพิ่มปลายทาง</button>
+    </div>
+
+    ${cardsHTML}
+  `;
+}
+
+function parsePlanNote() {
+  const note = (APP.planNote || '').toLowerCase();
+  const TH = {
+    'ญี่ปุ่น':'japan','เกาหลี':'skorea','เกาหลีใต้':'skorea','ไต้หวัน':'taiwan',
+    'เวียดนาม':'vietnam','กัมพูชา':'cambodia','พม่า':'myanmar','อินโดนีเซีย':'indonesia',
+    'บาหลี':'indonesia','ฟิลิปปินส์':'philippines','สิงคโปร์':'singapore',
+    'มาเลเซีย':'malaysia','อินเดีย':'india','จีน':'china','เนปาล':'nepal',
+    'ศรีลังกา':'srilanka','อิตาลี':'italy','ฝรั่งเศส':'france','สเปน':'spain',
+    'กรีซ':'greece','โปรตุเกส':'portugal','สวิตเซอร์แลนด์':'switzerland',
+    'เยอรมนี':'germany','อังกฤษ':'uk','นอร์เวย์':'norway','ไอซ์แลนด์':'iceland',
+    'ตุรกี':'turkey','โมร็อกโก':'morocco','อียิปต์':'egypt','แทนซาเนีย':'tanzania',
+    'แอฟริกาใต้':'southafrica','เคนยา':'kenya','ออสเตรเลีย':'australia',
+    'นิวซีแลนด์':'newzealand','เปรู':'peru','บราซิล':'brazil',
+    'อเมริกา':'usa','แคนาดา':'canada','เม็กซิโก':'mexico',
+  };
+  const prioritize = [];
+  Object.entries(TH).forEach(([th, id]) => { if (note.includes(th) && !prioritize.includes(id)) prioritize.push(id); });
+  allDB().forEach(c => { if ((note.includes(c.name.toLowerCase()) || note.includes(c.id)) && !prioritize.includes(c.id)) prioritize.push(c.id); });
+
+  // Detect deferred continents (e.g. "อเมริกาใต้ หลัง 60")
+  const deferConts = [];
+  const deferMatch = note.match(/หลัง(?:อายุ)?\s*(\d+)/);
+  const deferMinAge = deferMatch ? +deferMatch[1] : 60;
+  if (/อเมริกาใต้|south america/.test(note)) deferConts.push('americas');
+  if (/ขั้วโลก|polar|antarctica/.test(note)) deferConts.push('polar');
+  if (/ยุโรป|europe/.test(note) && /หลัง/.test(note)) deferConts.push('europe');
+  if (/แอฟริกา|africa/.test(note) && /หลัง/.test(note)) deferConts.push('africa');
+  if (/โอเชียเนีย|oceania|ออสเตรเลีย|australia/.test(note) && /หลัง/.test(note)) deferConts.push('oceania');
+
+  // Detect fast continents (2 trips per year)
+  const fastConts = [];
+  if (/เอเชีย.*ปีละ\s*2|ปีละ\s*2.*เอเชีย|2\s*ทริป.*ปี.*เอเชีย|เอเชีย.*2\s*ทริป/.test(note)) fastConts.push('asia');
+  if (/ยุโรป.*ปีละ\s*2|ปีละ\s*2.*ยุโรป/.test(note)) fastConts.push('europe');
+
+  return {
+    separate: /แยก|ไม่รวม|ประเทศละ/.test(note),
+    prioritize,
+    deferConts,
+    deferMinAge,
+    fastConts,
+  };
+}
+
+async function callClaude(note, apiKey) {
+  const selIds = Object.keys(SEL).filter(id => isSelected(id));
+  const picks = selIds.map(id => {
+    const c = allDB().find(d => d.id === id);
+    return c ? `${c.id}: ${c.name} (${c.sub}, energy:${c.energy}/5, cost:฿${fmt(c.cost)})` : null;
+  }).filter(Boolean);
+
+  const phase = getCurrentPhase();
+  const userMsg = `ผู้ใช้ชื่อ "${PROFILE.name||'ผู้เดินทาง'}" อายุ ${PROFILE.age} ปี งบต่อทริป ฿${fmt(phase?.budget||150000)} วันหยุด ${phase?.days||20} วัน/ปี อยากเที่ยวถึงอายุ ${PROFILE.activeUntil||65} ปี
+
+ปลายทางที่เลือก:
+${picks.join('\n')}
+
+ความต้องการ: "${note}"
+
+ตอบ JSON เท่านั้น ห้ามมีข้อความอื่น:
+{"order":["id1","id2",...],"separate":false,"explain":"เหตุผล 1-2 ประโยค"}
+
+order ต้องครบทุก id: ${selIds.join(',')}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      system: 'คุณเป็น AI วางแผนการท่องเที่ยว ตอบ JSON เท่านั้น ไม่มีข้อความอื่น',
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const match = data.content[0].text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('no JSON');
+  const p = JSON.parse(match[0]);
+  APP.planExplain = p.explain || '';
+  return { prioritize: p.order || [], separate: !!p.separate };
+}
+
+async function runGeneratePlan() {
+  const el = document.getElementById('plan_note');
+  if (el) APP.planNote = el.value;
+
+  const apiKey = localStorage.getItem('claude_api_key') || '';
+  let inst = null;
+
+  if (APP.planNote.trim() && apiKey) {
+    const btn = document.querySelector('[onclick="runGeneratePlan()"]');
+    if (btn) { btn.innerHTML = '⏳ AI กำลังคิด...'; btn.disabled = true; btn.style.opacity = '0.7'; }
+    try {
+      inst = await callClaude(APP.planNote, apiKey);
+    } catch(err) {
+      APP.planExplain = '';
+      showToast('⚠️ AI error — ใช้แผนปกติแทน', '#E8956A');
+    }
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+  } else {
+    APP.planExplain = '';
+  }
+
+  generatePlan(inst);
+  save();
+  renderSidebar();
+  renderPage();
+  const btn2 = document.querySelector('[onclick="runGeneratePlan()"]');
+  if (btn2) {
+    btn2.innerHTML = '✓ Generate แล้ว!';
+    btn2.style.background = 'linear-gradient(135deg,#5CB88A,#3D9A6C)';
+    setTimeout(() => { btn2.innerHTML = '🔄 Generate ใหม่'; btn2.style.background = ''; }, 2000);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  PAGE: YEAR PLAN
+// ═══════════════════════════════════════════════════
+function pagePlan() {
+  if (!PLAN_GEN || !PLAN.length) {
+    const hasPicks = picksCount() > 0;
+    return `
+      <div class="page-title">📅 Year Plan</div>
+      <div class="page-sub">AI จัดแผนการเดินทางตลอดช่วงชีวิต</div>
+      <div class="card" style="text-align:center;padding:40px">
+        <div style="font-size:48px;margin-bottom:12px">📅</div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px">
+          ${hasPicks ? 'กด Generate Plan เพื่อสร้างแผน' : 'เลือกปลายทางก่อน'}
+        </div>
+        ${hasPicks ? `
+          <textarea id="plan_note" class="inp" rows="2"
+            placeholder="${localStorage.getItem('claude_api_key') ? '✨ พิมพ์ความต้องการ AI จะวางแผนให้จริงๆ' : 'เช่น: อยากไปญี่ปุ่นก่อนเลย · แยกยุโรปออกแต่ละทริป · ไม่รวมทริป'}"
+            oninput="APP.planNote=this.value"
+            style="resize:vertical;min-height:54px;margin-bottom:12px;display:block;text-align:left">${esc(APP.planNote||'')}</textarea>
+          <button class="btn btn-p" onclick="runGeneratePlan()">🤖 สร้าง Year Plan</button>`
+          : `<button class="btn btn-g" onclick="nav('explore')">🌍 ไปเลือกปลายทาง</button>`}
+      </div>`;
+  }
+
+  const entriesHTML = PLAN.map((entry, idx) => {
+    const { year, age, trip, phase, warn, combines } = entry;
+    const cont = CONTS.find(c => c.id === trip.cont);
+    const tripFlags = trip.items.map(i => i.country.flag).join('');
+    const tripNames = trip.items.map(i => i.country.name).join(' + ');
+    const selCityNames = trip.items.flatMap(i => i.cities.map(c => c.em + ' ' + c.name)).join(', ');
+    const phaseBudget = phase ? phase.budget : 150000;
+    const budgetPct = Math.min(100, Math.round((trip.totalCost / phaseBudget) * 100));
+    const budgetColor = budgetPct > 120 ? '#C45A7A' : budgetPct > 90 ? '#E8956A' : '#5CB88A';
+
+    return `<div class="plan-year">
+      <div class="year-head">
+        <span class="year-num">${year}</span>
+        <span class="year-age">อายุ ${age} ปี</span>
+        ${phase ? `<span class="badge" style="background:#F0EBE5;color:#6B5E54">${phase.fromAge}-${phase.toAge} ปี</span>` : ''}
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button class="arr-btn" onclick="movePlanItem(${idx},-1)" title="เลื่อนขึ้น">▲</button>
+          <button class="arr-btn" onclick="movePlanItem(${idx},1)" title="เลื่อนลง">▼</button>
+        </div>
+      </div>
+      <div class="trip-card" onclick="showTripDetail(${idx})">
+        <div class="trip-flags">${tripFlags}</div>
+        <div class="trip-body">
+          <div class="trip-name">${tripNames}</div>
+          ${selCityNames ? `<div class="trip-cities">${selCityNames}</div>` : ''}
+          <div style="margin:8px 0 4px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#9E918A;margin-bottom:3px">
+              <span>งบทริป ฿${fmt(trip.totalCost)}</span>
+              <span style="color:${budgetColor};font-weight:600">${budgetPct}% ของงบช่วงนี้ (฿${fmt(phaseBudget)})</span>
+            </div>
+            <div style="background:#EDE5DC;border-radius:4px;height:6px;overflow:hidden">
+              <div style="width:${Math.min(budgetPct,100)}%;height:100%;background:${budgetColor};border-radius:4px;transition:width .4s"></div>
+            </div>
+          </div>
+          <div class="trip-meta">
+            <span style="color:#9E918A">~${trip.totalDays} วัน</span>
+            <span style="color:#9E918A">Energy: ${trip.maxEnergy}/5</span>
+            ${cont ? `<span class="badge" style="background:${cont.color}22;color:${cont.color}">${cont.label}</span>` : ''}
+          </div>
+          ${warn.map(w => `<div class="warn-badge">${w}</div>`).join('')}
+          ${combines ? `<div class="ai-tip">${combines}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const totalBudget = PLAN.reduce((s, e) => s + e.trip.totalCost, 0);
+  const lastYear = PLAN.length ? PLAN[PLAN.length - 1].year : new Date().getFullYear();
+  const span = lastYear - new Date().getFullYear();
+
+  // Table view — year-grouped, inline editable
+  const inpStyle = 'border-radius:7px;border:1.5px solid #EDE5DC;background:#FFF8F0;font-family:inherit;font-size:12px;padding:4px 6px;outline:none;';
+  const btnBase  = 'border:none;border-radius:6px;padding:4px 7px;cursor:pointer;font-size:12px;';
+
+  // Group by year (preserve PLAN order within each year)
+  const yearMap = {};
+  PLAN.forEach((entry, idx) => {
+    if (!yearMap[entry.year]) yearMap[entry.year] = [];
+    yearMap[entry.year].push({ entry, idx });
+  });
+
+  const tableRows = Object.keys(yearMap).sort((a,b) => +a - +b).map(year => {
+    const group    = yearMap[year];
+    const yearAge  = PROFILE.age + (+year - new Date().getFullYear());
+    const yearDays = group.reduce((s, {entry}) => s + entry.trip.totalDays, 0);
+    const yearBdg  = group.reduce((s, {entry}) => s + entry.trip.totalCost, 0);
+
+    const yearHeader = `
+      <tr style="background:#F5F0FA;border-top:2px solid #C9A8F0;border-bottom:1px solid #EDE5DC">
+        <td colspan="9" style="padding:9px 14px">
+          <span style="font-size:18px;font-weight:800;color:#6B3FA0">📅 ${year}</span>
+          <span style="font-size:12px;color:#9E918A;margin-left:12px">อายุ ${yearAge} ปี</span>
+          <span style="font-size:12px;font-weight:700;color:#9B72D0;margin-left:10px">${group.length} ทริป · ${yearDays} วัน · ฿${fmt(yearBdg)}</span>
+        </td>
+      </tr>`;
+
+    const tripRows = group.map(({ entry, idx }, posInYear) => {
+      const { trip, warn } = entry;
+      const cont       = CONTS.find(c => c.id === trip.cont);
+      const isSouthAm  = trip.items.every(i => i.country.sub === 'South America');
+      const isAfrica   = trip.items.every(i => i.country.cont === 'africa');
+      const volBadge   = trip.vol ? `<span style="font-size:10px;background:#FFE8F0;color:#C45A7A;padding:1px 6px;border-radius:8px;margin-left:4px">Vol.${trip.vol}</span>` : '';
+      const countryLabel = isSouthAm ? '🌎 South America'
+                         : isAfrica  ? '🌍 Africa Grand Tour'
+                         : trip.items.map(i => i.country.flag + ' ' + i.country.name).join(' + ');
+      const hasGroup = TRIP_GROUPS.some(g => trip.items.some(i => g.countries.includes(i.country.id)));
+      const energy   = '●'.repeat(trip.maxEnergy) + '○'.repeat(5 - trip.maxEnergy);
+      const warnIcon = warn.length ? ' ⚠️' : '';
+
+      // Default places from selected cities, fallback to DB top cities
+      const defaultPlaces = trip.items.flatMap(item => {
+        if (item.cities && item.cities.length) return item.cities.map(c => c.em + ' ' + c.name);
+        const db = allDB().find(d => d.id === item.country.id);
+        return db && db.cities ? db.cities.slice(0,4).map(c => c.em + ' ' + c.name) : [];
+      }).slice(0,6).join(' · ');
+      const placesVal = entry.places !== undefined ? entry.places : defaultPlaces;
+
+      const canUp   = posInYear > 0;
+      const canDown = posInYear < group.length - 1;
+
+      return `
+        <tr style="border-bottom:1px solid #F5F0EB" onmouseover="this.style.background='#FFFAF5'" onmouseout="this.style.background=''">
+          <td style="padding:6px 8px">
+            <input type="number" id="et_year_${idx}" value="${entry.year}" min="2020" max="2100"
+              style="${inpStyle}width:68px;font-weight:700;color:#9B72D0;text-align:center"
+              onfocus="this.style.borderColor='#9B72D0'" onblur="this.style.borderColor='#EDE5DC'">
+          </td>
+          <td onclick="showTripDetail(${idx})" style="cursor:pointer;padding:6px 10px;white-space:nowrap">
+            <div style="font-size:13px;font-weight:600">${countryLabel}${volBadge}${warnIcon}</div>
+            ${hasGroup ? '<div style="margin-top:2px"><span style="font-size:10px;background:#F0E8FF;color:#9B72D0;padding:1px 5px;border-radius:8px">แผนละเอียด</span></div>' : ''}
+          </td>
+          <td style="padding:6px 6px">
+            <input type="text" id="et_places_${idx}" value="${esc(placesVal)}" placeholder="สถานที่..."
+              style="${inpStyle}width:190px;color:#6B5E54"
+              onfocus="this.style.borderColor='#9B72D0'" onblur="this.style.borderColor='#EDE5DC'">
+          </td>
+          <td style="padding:6px 6px">${cont ? `<span style="background:${cont.color}22;color:${cont.color};padding:3px 8px;border-radius:10px;font-size:11px;font-weight:600">${cont.label}</span>` : ''}</td>
+          <td style="padding:6px 4px">
+            <input type="number" id="et_days_${idx}" value="${trip.totalDays}" min="1" max="365"
+              style="${inpStyle}width:54px;color:#9E918A;text-align:center"
+              onfocus="this.style.borderColor='#9B72D0'" onblur="this.style.borderColor='#EDE5DC'">
+          </td>
+          <td style="padding:6px 4px">
+            <input type="number" id="et_budget_${idx}" value="${trip.totalCost}" min="0" step="5000"
+              style="${inpStyle}width:82px;color:#E8956A;font-weight:600;text-align:right"
+              onfocus="this.style.borderColor='#9B72D0'" onblur="this.style.borderColor='#EDE5DC'">
+          </td>
+          <td style="padding:6px 4px;font-size:11px;color:#9B72D0;letter-spacing:1px;white-space:nowrap">${energy}</td>
+          <td style="padding:6px 6px">${renderMonths(tripBestMonths(trip))}</td>
+          <td style="padding:6px 6px">
+            <input type="text" id="et_remark_${idx}" value="${esc(entry.remark||'')}" placeholder="หมายเหตุ..."
+              style="${inpStyle}width:100px;color:#3D3028"
+              onfocus="this.style.borderColor='#9B72D0'" onblur="this.style.borderColor='#EDE5DC'">
+          </td>
+          <td style="padding:6px 8px;white-space:nowrap">
+            <button onclick="movePlanInYear(${idx},-1)" ${!canUp?'disabled':''} title="ขึ้น"
+              style="${btnBase}background:${canUp?'#F0E8FF':'#F0F0F0'};color:${canUp?'#9B72D0':'#C4B8B0'};margin-right:2px">▲</button>
+            <button onclick="movePlanInYear(${idx},1)" ${!canDown?'disabled':''} title="ลง"
+              style="${btnBase}background:${canDown?'#F0E8FF':'#F0F0F0'};color:${canDown?'#9B72D0':'#C4B8B0'};margin-right:4px">▼</button>
+            <button onclick="duplicatePlan(${idx})" title="Duplicate"
+              style="${btnBase}background:#FFF0E8;color:#E8956A;margin-right:2px">⧉</button>
+            <button onclick="removePlan(${idx})" title="ลบ"
+              style="${btnBase}background:#FFE8EE;color:#C45A7A">🗑</button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return yearHeader + tripRows;
+  }).join('');
+
+  const tableViewHTML = `
+    <div style="overflow-x:auto;border-radius:14px;border:1.5px solid #EDE5DC;background:#fff">
+      <table style="width:100%;border-collapse:collapse;min-width:420px">
+        <thead>
+          <tr style="background:#F8F4F0;border-bottom:2px solid #EDE5DC">
+            <th style="padding:10px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">ปี</th>
+            <th style="padding:10px 10px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">ประเทศ</th>
+            <th style="padding:10px 6px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">สถานที่</th>
+            <th style="padding:10px 6px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">ทวีป</th>
+            <th style="padding:10px 6px;text-align:center;font-size:11px;color:#6B5E54;font-weight:700">วัน</th>
+            <th style="padding:10px 6px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">งบ</th>
+            <th style="padding:10px 6px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">Energy</th>
+            <th style="padding:10px 6px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">เดือนที่ดี 🟢</th>
+            <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B5E54;font-weight:700">หมายเหตุ</th>
+            <th style="padding:10px 8px;text-align:center;font-size:11px;color:#6B5E54;font-weight:700"></th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+        <tfoot>
+          <tr style="background:#F8F4F0;border-top:2px solid #EDE5DC">
+            <td colspan="4" style="padding:10px;font-size:12px;color:#6B5E54;font-weight:700">รวม ${PLAN.length} ทริป · ${span} ปี</td>
+            <td style="padding:10px 6px;font-size:12px;color:#9E918A;text-align:center;white-space:nowrap">${PLAN.reduce((s,e)=>s+e.trip.totalDays,0)}วัน</td>
+            <td style="padding:10px 6px;font-size:13px;font-weight:700;color:#9B72D0">฿${fmt(totalBudget)}</td>
+            <td></td><td></td><td></td><td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:14px">
+      <button class="btn btn-p" onclick="submitPlanEdits()" style="padding:11px 32px;font-size:14px">✓ บันทึกแผนทั้งหมด</button>
+    </div>
+    <div style="font-size:11px;color:#9E918A;margin-top:8px;text-align:center">กดชื่อทริปเพื่อดูแผนละเอียด · แก้ไขค่าแล้วกด บันทึกแผนทั้งหมด</div>`;
+
+  return `
+    <div class="page-title">📅 Year Plan</div>
+    <div class="page-sub">${PLAN.length} ทริป ใน ${span} ปี · งบรวม ฿${fmt(totalBudget)}</div>
+
+    <div style="margin-bottom:8px">
+      <textarea id="plan_note" class="inp" rows="2"
+        placeholder="${localStorage.getItem('claude_api_key') ? '✨ พิมพ์ความต้องการ AI จะวางแผนให้จริงๆ เช่น อยากไปญี่ปุ่นก่อน แยกยุโรปออก ขอทริปสั้นๆ' : 'เช่น: อยากไปญี่ปุ่นก่อนเลย · แยกยุโรปออกแต่ละทริป · ไม่รวมทริป'}"
+        oninput="APP.planNote=this.value"
+        style="resize:vertical;min-height:60px">${esc(APP.planNote||'')}</textarea>
+      <details style="margin-top:5px">
+        <summary style="font-size:12px;color:#9E918A;cursor:pointer;user-select:none">🔑 Claude API Key ${localStorage.getItem('claude_api_key') ? '<span style="color:#5CB88A">● เชื่อมต่อแล้ว</span>' : '(ใส่เพื่อให้ AI วางแผนจริง)'}</summary>
+        <input class="inp" id="api_key_inp" type="password"
+          placeholder="sk-ant-api03-..."
+          value="${esc(localStorage.getItem('claude_api_key')||'')}"
+          oninput="localStorage.setItem('claude_api_key',this.value);renderPage()"
+          style="margin-top:6px;font-size:13px;font-family:monospace">
+        <div style="font-size:11px;color:#9E918A;margin-top:4px">Key เก็บไว้ใน browser เท่านั้น ไม่ส่งไปที่อื่น</div>
+      </details>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-p" onclick="runGeneratePlan()">🔄 Generate ใหม่</button>
+      <button class="btn btn-g btn-sm" onclick="exportData()">💾 Save ข้อมูล</button>
+      <label class="btn btn-g btn-sm" style="cursor:pointer">📂 โหลดข้อมูล<input type="file" accept=".json" style="display:none" onchange="importData(this)"></label>
+      <button class="btn btn-g btn-sm" onclick="shareLink()" style="border-color:#9B72D0;color:#9B72D0">🔗 Share Link</button>
+      <button class="btn btn-g btn-sm" onclick="nav('picks')">← กลับ Picks</button>
+      <div style="margin-left:auto;display:flex;gap:4px">
+        <button class="btn btn-sm" style="${APP.planView==='table'?'background:#9B72D0;color:#fff':'background:#F0EBE5;color:#6B5E54'}" onclick="APP.planView='table';renderPage()">☰ ตาราง</button>
+        <button class="btn btn-sm" style="${APP.planView==='cards'?'background:#9B72D0;color:#fff':'background:#F0EBE5;color:#6B5E54'}" onclick="APP.planView='cards';renderPage()">▦ การ์ด</button>
+      </div>
+    </div>
+
+    ${APP.planExplain ? `
+    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#F0E8FF,#E8F4FF);border-left:3px solid #9B72D0">
+      <div style="font-size:12px;color:#9B72D0;font-weight:700;margin-bottom:4px">✨ Claude วางแผนให้</div>
+      <div style="font-size:13px;color:#5A3E8A;line-height:1.7">${esc(APP.planExplain)}</div>
+    </div>` : ''}
+
+    ${APP.planView === 'table' ? tableViewHTML : entriesHTML}
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+//  PAGE: PROFILE
+// ═══════════════════════════════════════════════════
+function pageProfile() {
+  const phases = PROFILE.phases || [];
+  const STYLE_LIST = [
+    {v:'nature',l:'🌿 ธรรมชาติ'},{v:'adventure',l:'⛰️ Adventure'},{v:'culture',l:'🏛️ วัฒนธรรม'},
+    {v:'history',l:'📜 ประวัติศาสตร์'},{v:'food',l:'🍜 อาหาร'},{v:'art',l:'🎨 ศิลปะ'},
+    {v:'city',l:'🏙️ เมือง'},{v:'luxury',l:'✨ Luxury'},{v:'slow travel',l:'🌸 Slow Travel'},
+  ];
+  const CONS_LIST = [
+    {v:'cold',l:'🥶 ไม่ชอบอากาศหนาว'},{v:'walk',l:'🦿 เดินเยอะไม่ได้'},
+    {v:'risk',l:'🛡️ ชอบความปลอดภัยสูง'},{v:'crowd',l:'👥 หลีกเลี่ยงที่แออัด'},
+  ];
+
+  const phasesHTML = phases.map((p, i) => `
+    <div class="phase-row" id="phase_${i}">
+      <div>
+        <div style="font-size:11px;color:#9E918A">อายุ</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" min="20" max="85" value="${p.fromAge}" class="inp" style="width:52px;padding:5px 8px;font-size:13px"
+            oninput="PROFILE.phases[${i}].fromAge=+this.value;save()">
+          <span style="color:#9E918A">-</span>
+          <input type="number" min="20" max="90" value="${p.toAge}" class="inp" style="width:52px;padding:5px 8px;font-size:13px"
+            oninput="PROFILE.phases[${i}].toAge=+this.value;save()">
+        </div>
+      </div>
+      <div>
+        <div class="sldr-label"><span class="sldr-name" style="font-size:12px">งบ/ทริป</span><span class="sldr-val" style="font-size:14px" id="ph_budget_${i}_disp">฿${fmt(p.budget)}</span></div>
+        <input type="range" id="ph_budget_${i}" min="20000" max="600000" step="10000" value="${p.budget}" data-fmt="budget"
+          oninput="PROFILE.phases[${i}].budget=+this.value;updateSlider(this);save()">
+      </div>
+      <div>
+        <div class="sldr-label"><span class="sldr-name" style="font-size:12px">วัน/ปี</span><span class="sldr-val" style="font-size:14px" id="ph_days_${i}_disp">${p.days} วัน</span></div>
+        <input type="range" id="ph_days_${i}" min="5" max="60" value="${p.days}" data-fmt="days"
+          oninput="PROFILE.phases[${i}].days=+this.value;updateSlider(this);save()">
+      </div>
+      <button onclick="removePhase(${i})" style="background:none;border:none;color:#C45A7A;font-size:18px;cursor:pointer;padding:4px" title="ลบ">✕</button>
+    </div>
+  `).join('');
+
+  return `
+    <div class="page-title">👤 Profile</div>
+    <div class="page-sub">ข้อมูลของคุณ — AI ใช้ข้อมูลนี้คำนวณคะแนนและวางแผนทริป</div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;margin-bottom:14px">ข้อมูลพื้นฐาน</div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="fld"><label>ชื่อ</label><input class="inp" id="p_name" value="${esc(PROFILE.name)}" placeholder="ชื่อของคุณ" oninput="PROFILE.name=this.value;save()"></div>
+        <div class="fld"><label>อายุปัจจุบัน</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" class="inp" id="p_age" value="${PROFILE.age}" min="20" max="80" style="width:80px" oninput="if(+this.value>=18&&+this.value<=100){PROFILE.age=+this.value;save()}">
+            <span style="color:#9E918A;font-size:13px">ปี</span>
+          </div>
+        </div>
+      </div>
+      <div class="sldr-wrap">
+        <div class="sldr-label"><span class="sldr-name">อยากเที่ยว Active ถึงอายุ</span><span class="sldr-val" id="p_active_disp">${PROFILE.activeUntil} ปี</span></div>
+        <input type="range" id="p_active" min="50" max="85" value="${PROFILE.activeUntil}" data-fmt="age"
+          oninput="PROFILE.activeUntil=+this.value;updateSlider(this)">
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-family:'Playfair Display',serif;font-size:16px">ช่วงชีวิต & งบประมาณ</div>
+        <button class="btn btn-g btn-sm" onclick="addPhase()">+ เพิ่มช่วง</button>
+      </div>
+      <div style="display:grid;grid-template-columns:130px 1fr 1fr auto;gap:10px;padding:6px 14px;margin-bottom:6px">
+        <div style="font-size:11px;color:#9E918A;font-weight:600">ช่วงอายุ</div>
+        <div style="font-size:11px;color:#9E918A;font-weight:600">งบต่อทริป (฿)</div>
+        <div style="font-size:11px;color:#9E918A;font-weight:600">วันหยุดต่อปี</div>
+        <div></div>
+      </div>
+      <div id="phases-container">${phasesHTML}</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;margin-bottom:12px">สไตล์การเดินทาง</div>
+      <div class="chips">${STYLE_LIST.map(s => `<button class="chip${(PROFILE.styles||[]).includes(s.v)?' sel':''}" onclick="toggleStyle('${s.v}')">${s.l}</button>`).join('')}</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;margin-bottom:12px">ข้อจำกัด</div>
+      <div class="chips">${CONS_LIST.map(c => `<button class="chip${(PROFILE.constraints||[]).includes(c.v)?' sel-r':''}" onclick="toggleConstraint('${c.v}')">${c.l}</button>`).join('')}</div>
+    </div>
+
+    <button class="btn btn-p" onclick="saveProfile()" style="width:100%;padding:12px">💾 บันทึก Profile</button>
+  `;
+}
+
+function syncProfileInputs() {
+  const n = document.getElementById('p_name');
+  const a = document.getElementById('p_age');
+  if (n) PROFILE.name = n.value.trim();
+  if (a && +a.value) PROFILE.age = +a.value;
+}
+
+function toggleStyle(v) {
+  syncProfileInputs();
+  const s = PROFILE.styles || [];
+  PROFILE.styles = s.includes(v) ? s.filter(x => x !== v) : [...s, v];
+  renderPage();
+}
+
+function toggleConstraint(v) {
+  syncProfileInputs();
+  const s = PROFILE.constraints || [];
+  PROFILE.constraints = s.includes(v) ? s.filter(x => x !== v) : [...s, v];
+  renderPage();
+}
+
+function addPhase() {
+  syncProfileInputs();
+  const last = PROFILE.phases[PROFILE.phases.length - 1];
+  PROFILE.phases.push({ fromAge: last ? last.toAge : 60, toAge: (last ? last.toAge : 60) + 10, budget: 100000, days: 20 });
+  save(); renderPage();
+}
+
+function removePhase(i) {
+  if (PROFILE.phases.length <= 1) return;
+  syncProfileInputs();
+  PROFILE.phases.splice(i, 1);
+  save(); renderPage();
+}
+
+function saveProfile() {
+  const nameEl = document.getElementById('p_name');
+  const ageEl  = document.getElementById('p_age');
+  if (nameEl) PROFILE.name = nameEl.value.trim();
+  if (ageEl && +ageEl.value) PROFILE.age = +ageEl.value;
+  save();
+  const btn = document.querySelector('[onclick="saveProfile()"]');
+  if (btn) {
+    btn.textContent = '✓ บันทึกแล้ว!';
+    btn.style.background = 'linear-gradient(135deg,#5CB88A,#3D9A6C)';
+    btn.style.boxShadow = '0 3px 12px rgba(92,184,138,.4)';
+    setTimeout(() => { btn.textContent = '💾 บันทึก Profile'; btn.style.background = ''; btn.style.boxShadow = ''; }, 2200);
+  }
+  renderSidebar();
+}
+
+// ═══════════════════════════════════════════════════
+//  APP SHELL
+// ═══════════════════════════════════════════════════
+function renderSidebar() {
+  const count = picksCount();
+  document.getElementById('sidebar').innerHTML = `
+    <div class="logo-area">
+      <div class="logo-em">✈️</div>
+      <div class="logo-title">Life Travel Planner</div>
+      <div class="logo-sub">${esc(PROFILE.name || 'Traveler')} · ${count} ปลายทาง</div>
+    </div>
+    <nav class="nav-area">
+      ${[['explore','🌍','Explore'],['picks','💫','My Picks'],['plan','📅','Year Plan'],['profile','👤','Profile']]
+        .map(([id,icon,label]) => `<button class="nb${APP.page===id?' active':''}" onclick="nav('${id}')">
+          <span class="nb-icon">${icon}</span><span>${label}</span>
+        </button>`).join('')}
+    </nav>
+    ${count > 0 ? `<div class="sidebar-picks">💫 ${count} ปลายทางที่เลือก</div>` : ''}
+  `;
+}
+
+function renderPage() {
+  const pages = { explore: pageExplore, picks: pagePicks, plan: pagePlan, profile: pageProfile };
+  document.getElementById('content').innerHTML = (pages[APP.page] || pageExplore)();
+  // Init sliders
+  document.querySelectorAll('input[type=range]').forEach(el => updateSlider(el));
+}
+
+function nav(page) { APP.page = page; APP.expanded = null; renderSidebar(); renderPage(); }
+
+function renderApp() {
+  document.getElementById('app').innerHTML = `
+    <div id="layout">
+      <nav id="sidebar"></nav>
+      <main id="content"></main>
+    </div>`;
+  renderSidebar();
+  renderPage();
+}
+
+// ═══════════════════════════════════════════════════
+//  SHARE LINK
+// ═══════════════════════════════════════════════════
+function serializePlan(plan) {
+  return plan.map(e => ({
+    y:e.year, a:e.age, v:e.vol, r:e.remark||'', p:e.places,
+    ids: e.trip.items.map(i => i.country.id),
+    cids: e.trip.items.map(i => (i.cities||[]).map(c => c.id)),
+    d:e.trip.totalDays, b:e.trip.totalCost, en:e.trip.maxEnergy,
+    co:e.trip.cont, su:e.trip.sub, tv:e.trip.vol, w:e.warn||[]
+  }));
+}
+
+function deserializePlan(lean) {
+  return lean.map(e => {
+    const items = (e.ids||[]).map((cid, i) => {
+      const country = allDB().find(d => d.id === cid);
+      if (!country) return null;
+      const cities = (e.cids[i]||[]).map(ctyId => country.cities.find(c => c.id === ctyId)).filter(Boolean);
+      return { country, cities };
+    }).filter(Boolean);
+    if (!items.length) return null;
+    return {
+      year:e.y, age:e.a, vol:e.v, remark:e.r||'', places:e.p, warn:e.w||[],
+      trip:{ items, cont:e.co, sub:e.su, totalDays:e.d, totalCost:e.b, maxEnergy:e.en, vol:e.tv },
+      phase:getPhaseForAge(e.a), combines:null
+    };
+  }).filter(Boolean);
+}
+
+function copyText(text) {
+  if (navigator.clipboard) {
+    return navigator.clipboard.writeText(text).catch(() => copyTextFallback(text));
+  }
+  return Promise.resolve(copyTextFallback(text));
+}
+function copyTextFallback(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+}
+
+function shareLink() {
+  openM(`
+    <div class="mhdr"><h3>📤 ส่งแผนให้เพื่อน</h3><button class="xbtn" onclick="closeM()">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">
+      <button class="btn btn-p" style="padding:16px;font-size:15px;text-align:left;display:flex;align-items:center;gap:12px" onclick="exportShareCode()">
+        <span style="font-size:28px">💾</span>
+        <span>
+          <div style="font-weight:700">ดาวน์โหลดไฟล์แชร์</div>
+          <div style="font-size:12px;opacity:.8;font-weight:400">ส่งไฟล์ .html ให้เพื่อน → เพื่อนดับเบิ้ลคลิกเปิดได้เลย</div>
+        </span>
+      </button>
+      <button class="btn btn-g" style="padding:16px;font-size:15px;text-align:left;display:flex;align-items:center;gap:12px" onclick="copyShareUrl()">
+        <span style="font-size:28px">🔗</span>
+        <span>
+          <div style="font-weight:700">Copy Link</div>
+          <div style="font-size:12px;opacity:.7;font-weight:400">ใช้ได้เมื่ออัปโหลดขึ้น web server แล้วเท่านั้น</div>
+        </span>
+      </button>
+    </div>
+  `);
+}
+
+function copyShareUrl() {
+  save();
+  const data = { pr: PROFILE, se: SEL, pn: APP.planNote, pl: serializePlan(PLAN), gr: TRIP_GROUPS.filter(g => g.id !== 'south_america_grand'), v: 2 };
+  let encoded;
+  try { encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data)))); }
+  catch(e) { showToast('❌ ข้อมูลใหญ่เกินไป', '#C45A7A'); return; }
+  const url = location.origin + location.pathname + '#s=' + encoded;
+  copyText(url);
+  showToast('🔗 Copy Link แล้ว!', '#5CB88A');
+  closeM();
+}
+
+async function exportShareCode() {
+  save();
+  try {
+    const res = await fetch(location.pathname || './index.html');
+    let html = await res.text();
+    const keys = ['ltbp3_profile','ltbp3_sel','ltbp3_plan','ltbp3_note'];
+    const ls = {};
+    keys.forEach(k => { const v = localStorage.getItem(k); if (v) ls[k] = v; });
+    const seed = `<script>(function(){const d=${JSON.stringify(ls)};Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,v));})();<\/script>`;
+    html = html.replace('</head>', seed + '\n</head>');
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ltbp-plan-' + new Date().toISOString().slice(0,10) + '.html';
+    a.click();
+    closeM();
+    showToast('💾 Export HTML แล้ว! เพื่อนเปิดไฟล์ใน browser ได้เลย', '#5CB88A');
+  } catch(e) {
+    showToast('❌ Export ไม่สำเร็จ', '#C45A7A');
+  }
+}
+
+function loadFromHash() {
+  const hash = location.hash;
+  if (!hash.startsWith('#s=')) return false;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(hash.slice(3)))));
+    if (data.pr) PROFILE = data.pr;
+    if (data.se) SEL     = data.se;
+    if (data.pn !== undefined) APP.planNote = data.pn;
+    if (data.pl) { PLAN = deserializePlan(data.pl); PLAN_GEN = PLAN.length > 0; }
+    if (data.gr && data.gr.length) data.gr.forEach(g => { if (!TRIP_GROUPS.find(x => x.id === g.id)) TRIP_GROUPS.push(g); });
+    save();
+    history.replaceState(null, '', location.pathname);
+    APP.page = 'plan';
+    return true;
+  } catch(e) { showToast('❌ Link ไม่ถูกต้อง', '#C45A7A'); return false; }
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+renderApp();
+loadFromHash() && (renderSidebar(), renderPage());
+</script>
+</body>
+</html>
