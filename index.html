@@ -725,22 +725,68 @@ let CUSTOM = [];
 // ═══════════════════════════════════════════════════
 const load = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } };
 
-let PROFILE = load('ltbp3_profile', {
-  name: '', age: 40, activeUntil: 65,
-  styles: [], constraints: [], past: [],
-  phases: [
+// ═══════════════════════════════════════════════════
+//  MULTI-PROFILE SYSTEM
+// ═══════════════════════════════════════════════════
+let PROFILES = load('ltbp3_profiles', null);
+let ACTIVE_ID = load('ltbp3_active', null);
+
+// Migration: convert old single-profile format → multi-profile
+(function migrateOldData() {
+  if (!PROFILES) {
+    const oldP = load('ltbp3_profile', null);
+    const oldSel = load('ltbp3_sel', {});
+    const oldPlan = load('ltbp3_plan', []);
+    const oldNote = load('ltbp3_note', '');
+    const id = 'p_' + Date.now();
+    PROFILES = [{
+      id, emoji: '🌸',
+      name: oldP?.name || 'My Profile',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      age: oldP?.age ?? 40,
+      activeUntil: oldP?.activeUntil ?? 65,
+      styles: oldP?.styles || [],
+      constraints: oldP?.constraints || [],
+      phases: oldP?.phases || [
+        {fromAge: 40, toAge: 50, budget: 150000, days: 20},
+        {fromAge: 50, toAge: 60, budget: 120000, days: 25},
+        {fromAge: 60, toAge: 75, budget: 100000, days: 30},
+      ],
+      sel: oldSel,
+      plan: oldPlan,
+      planNote: oldNote,
+    }];
+    ACTIVE_ID = id;
+    localStorage.setItem('ltbp3_profiles', JSON.stringify(PROFILES));
+    localStorage.setItem('ltbp3_active', ACTIVE_ID);
+  }
+  if (!ACTIVE_ID || !PROFILES.find(p => p.id === ACTIVE_ID)) {
+    ACTIVE_ID = PROFILES[0]?.id || null;
+  }
+})();
+
+const _ap = PROFILES.find(p => p.id === ACTIVE_ID) || PROFILES[0] || {};
+
+let PROFILE = {
+  name: _ap.name || '',
+  age: _ap.age ?? 40,
+  activeUntil: _ap.activeUntil ?? 65,
+  styles: _ap.styles || [],
+  constraints: _ap.constraints || [],
+  phases: _ap.phases || [
     {fromAge: 40, toAge: 50, budget: 150000, days: 20},
     {fromAge: 50, toAge: 60, budget: 120000, days: 25},
     {fromAge: 60, toAge: 75, budget: 100000, days: 30},
-  ]
-});
+  ],
+};
 
 // SEL: { [countryId]: { on: bool, cities: { [cityId]: bool } } }
-let SEL = load('ltbp3_sel', {});
+let SEL = _ap.sel || {};
 
-let PLAN = load('ltbp3_plan', []);
+let PLAN = _ap.plan || [];
 let PLAN_GEN = PLAN.length > 0;
-let APP = { page: 'explore', cont: 'asia', expanded: null, planNote: load('ltbp3_note', ''), planExplain: '', planView: 'table' };
+let APP = { page: 'explore', cont: 'asia', expanded: null, planNote: _ap.planNote || '', planExplain: '', planView: 'table' };
 
 let TRIP_GROUPS = load('ltbp3_groups', []);
 // Pre-populate South America Grand Trip if not stored yet
@@ -868,10 +914,24 @@ function renderMonths(months) {
 }
 
 function save() {
-  localStorage.setItem('ltbp3_profile', JSON.stringify(PROFILE));
-  localStorage.setItem('ltbp3_sel', JSON.stringify(SEL));
-  localStorage.setItem('ltbp3_plan', JSON.stringify(PLAN));
-  localStorage.setItem('ltbp3_note', APP.planNote);
+  const idx = PROFILES.findIndex(p => p.id === ACTIVE_ID);
+  if (idx >= 0) {
+    PROFILES[idx] = {
+      ...PROFILES[idx],
+      name: PROFILE.name,
+      age: PROFILE.age,
+      activeUntil: PROFILE.activeUntil,
+      styles: PROFILE.styles,
+      constraints: PROFILE.constraints,
+      phases: PROFILE.phases,
+      sel: SEL,
+      plan: PLAN,
+      planNote: APP.planNote,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('ltbp3_profiles', JSON.stringify(PROFILES));
+    localStorage.setItem('ltbp3_active', ACTIVE_ID);
+  }
 }
 
 function exportData() {
@@ -2056,6 +2116,51 @@ function pageProfile() {
     {v:'cold',l:'🥶 ไม่ชอบอากาศหนาว'},{v:'walk',l:'🦿 เดินเยอะไม่ได้'},
     {v:'risk',l:'🛡️ ชอบความปลอดภัยสูง'},{v:'crowd',l:'👥 หลีกเลี่ยงที่แออัด'},
   ];
+  const EMOJI_LIST = ['🌸','🌍','⭐','🧭','✈️','🏔️','🌊','🦋','🌺','🎯','🦁','🌙'];
+  const activeEmoji = (PROFILES.find(p => p.id === ACTIVE_ID) || {}).emoji || '🌸';
+
+  const profileCards = PROFILES.map(p => {
+    const isActive = p.id === ACTIVE_ID;
+    const selCount = Object.keys(p.sel || {}).filter(k => p.sel[k]?.on).length;
+    const tripCount = (p.plan || []).length;
+    const totalBudget = (p.plan || []).reduce((s, t) => s + (t.budget || 0), 0);
+    const updatedDate = new Date(p.updatedAt || p.createdAt || Date.now())
+      .toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'});
+    return `
+      <div style="border:2px solid ${isActive ? '#7B52B0' : '#EDE5DC'};border-radius:14px;padding:14px 16px;background:${isActive ? '#F8F4FE' : '#fff'};position:relative">
+        ${isActive ? '<div style="position:absolute;top:-1px;right:14px;background:#7B52B0;color:#fff;font-size:9px;font-weight:700;padding:3px 10px;border-radius:0 0 8px 8px;letter-spacing:.5px">ACTIVE</div>' : ''}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="font-size:30px;line-height:1">${p.emoji || '🌸'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:15px;color:#2C1810">${esc(p.name || 'Unnamed')}</div>
+            <div style="font-size:11px;color:#9E918A">อัปเดต ${updatedDate}</div>
+          </div>
+        </div>
+        <div style="display:flex;background:#F5EFE9;border-radius:10px;padding:10px;margin-bottom:12px;text-align:center">
+          <div style="flex:1;border-right:1px solid #E0D5CC">
+            <div style="font-size:20px;font-weight:700;color:#7B52B0">${selCount}</div>
+            <div style="font-size:10px;color:#9E918A">ประเทศ</div>
+          </div>
+          <div style="flex:1;border-right:1px solid #E0D5CC">
+            <div style="font-size:20px;font-weight:700;color:#5CB88A">${tripCount}</div>
+            <div style="font-size:10px;color:#9E918A">ทริป</div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:#C45A7A;line-height:1.6">฿${fmt(totalBudget)}</div>
+            <div style="font-size:10px;color:#9E918A">งบรวม</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${isActive
+            ? '<div style="flex:1;background:#EDE5F9;color:#7B52B0;border-radius:8px;text-align:center;font-size:12px;font-weight:600;padding:8px 0">✅ กำลังใช้งาน</div>'
+            : `<button class="btn btn-p btn-sm" style="flex:1" onclick="switchProfile('${p.id}')">เปิดใช้งาน</button>`
+          }
+          <button class="btn btn-g btn-sm" onclick="exportProfileJSON('${p.id}')" title="Export เป็น .json ส่งให้เพื่อนได้">📤</button>
+          ${PROFILES.length > 1 ? `<button class="btn btn-sm" style="background:#FEF0F4;color:#C45A7A;border:none" onclick="deleteProfile('${p.id}')">🗑️</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
 
   const phasesHTML = phases.map((p, i) => `
     <div class="phase-row" id="phase_${i}">
@@ -2084,11 +2189,36 @@ function pageProfile() {
   `).join('');
 
   return `
-    <div class="page-title">👤 Profile</div>
-    <div class="page-sub">ข้อมูลของคุณ — AI ใช้ข้อมูลนี้คำนวณคะแนนและวางแผนทริป</div>
+    <div class="page-title">👤 Profiles</div>
+    <div class="page-sub">แต่ละ Profile มีข้อมูลประเทศและแผนเดินทางแยกกัน · Export แชร์ข้ามเครื่องได้</div>
+
+    <!-- Profile List -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      ${profileCards}
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;margin-bottom:24px">
+      <button class="btn btn-g" style="flex:1;padding:11px;font-size:13px" onclick="createNewProfile()">＋ สร้าง Profile ใหม่</button>
+      <button class="btn btn-g" style="padding:11px;font-size:13px" onclick="document.getElementById('import-prof-input').click()" title="Import .json จากเพื่อน">📥 Import</button>
+      <input id="import-prof-input" type="file" accept=".json" style="display:none" onchange="importProfileJSON(this)">
+    </div>
+
+    <div style="border-top:2px solid #EDE5DC;margin-bottom:20px"></div>
+
+    <!-- Edit Active Profile -->
+    <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:16px;color:#2C1810">✏️ แก้ไข Profile ปัจจุบัน</div>
 
     <div class="card" style="margin-bottom:16px">
       <div style="font-family:'Playfair Display',serif;font-size:16px;margin-bottom:14px">ข้อมูลพื้นฐาน</div>
+
+      <div class="fld" style="margin-bottom:14px">
+        <label>ไอคอน</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${EMOJI_LIST.map(em => `<button onclick="setProfileEmoji('${em}')" style="font-size:20px;width:36px;height:36px;border-radius:8px;border:2px solid ${activeEmoji===em?'#7B52B0':'#EDE5DC'};background:${activeEmoji===em?'#F0EBF9':'#fff'};cursor:pointer;transition:all .15s">${em}</button>`).join('')}
+        </div>
+      </div>
+
       <div class="g2" style="margin-bottom:14px">
         <div class="fld"><label>ชื่อ</label><input class="inp" id="p_name" value="${esc(PROFILE.name)}" placeholder="ชื่อของคุณ" oninput="PROFILE.name=this.value;save()"></div>
         <div class="fld"><label>อายุปัจจุบัน</label>
@@ -2140,6 +2270,100 @@ function syncProfileInputs() {
   if (a && +a.value) PROFILE.age = +a.value;
 }
 
+function setProfileEmoji(em) {
+  const idx = PROFILES.findIndex(p => p.id === ACTIVE_ID);
+  if (idx >= 0) { PROFILES[idx].emoji = em; localStorage.setItem('ltbp3_profiles', JSON.stringify(PROFILES)); }
+  renderPage();
+}
+
+function switchProfile(id) {
+  save();
+  const p = PROFILES.find(pr => pr.id === id);
+  if (!p) return;
+  ACTIVE_ID = id;
+  PROFILE = {
+    name: p.name || '',
+    age: p.age ?? 40,
+    activeUntil: p.activeUntil ?? 65,
+    styles: p.styles || [],
+    constraints: p.constraints || [],
+    phases: p.phases || [],
+  };
+  SEL = p.sel || {};
+  PLAN = p.plan || [];
+  PLAN_GEN = PLAN.length > 0;
+  APP.planNote = p.planNote || '';
+  localStorage.setItem('ltbp3_active', ACTIVE_ID);
+  renderSidebar();
+  renderPage();
+  showToast(`✅ เปิด Profile "${esc(p.name)}" แล้ว`, '#7B52B0');
+}
+
+function createNewProfile() {
+  save();
+  const id = 'p_' + Date.now();
+  PROFILES.push({
+    id, emoji: '🌍', name: 'New Traveler',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    age: 35, activeUntil: 65,
+    styles: [], constraints: [],
+    phases: [
+      {fromAge: 35, toAge: 50, budget: 150000, days: 20},
+      {fromAge: 50, toAge: 65, budget: 120000, days: 30},
+    ],
+    sel: {}, plan: [], planNote: '',
+  });
+  localStorage.setItem('ltbp3_profiles', JSON.stringify(PROFILES));
+  switchProfile(id);
+}
+
+function deleteProfile(id) {
+  if (PROFILES.length <= 1) { showToast('⚠️ ต้องมี Profile อย่างน้อย 1 อัน', '#C45A7A'); return; }
+  const p = PROFILES.find(pr => pr.id === id);
+  if (!confirm(`ลบ Profile "${p?.name || ''}"?\nข้อมูลทั้งหมดจะหายไป`)) return;
+  PROFILES = PROFILES.filter(pr => pr.id !== id);
+  localStorage.setItem('ltbp3_profiles', JSON.stringify(PROFILES));
+  if (ACTIVE_ID === id) switchProfile(PROFILES[0].id);
+  else renderPage();
+  showToast('🗑️ ลบ Profile แล้ว', '#C45A7A');
+}
+
+function exportProfileJSON(id) {
+  if (id === ACTIVE_ID) save();
+  const p = PROFILES.find(pr => pr.id === id);
+  if (!p) return;
+  const blob = new Blob([JSON.stringify(p, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ltbp-profile-${(p.name||'profile').replace(/[^a-zA-Z0-9ก-๙]/g,'-')}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('📤 Export Profile แล้ว ส่งให้เพื่อน Import ได้เลย', '#5CB88A');
+}
+
+function importProfileJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const p = JSON.parse(e.target.result);
+      if (!p || typeof p !== 'object') throw new Error('invalid');
+      if (!p.id) p.id = 'p_' + Date.now();
+      p.updatedAt = new Date().toISOString();
+      const existingIdx = PROFILES.findIndex(pr => pr.id === p.id);
+      if (existingIdx >= 0) PROFILES[existingIdx] = p;
+      else PROFILES.push(p);
+      localStorage.setItem('ltbp3_profiles', JSON.stringify(PROFILES));
+      renderPage();
+      showToast(`✅ Import "${esc(p.name || 'Profile')}" สำเร็จ`, '#5CB88A');
+    } catch { showToast('❌ ไฟล์ไม่ถูกต้อง กรุณาใช้ไฟล์ .json จาก Export เท่านั้น', '#C45A7A'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
 function toggleStyle(v) {
   syncProfileInputs();
   const s = PROFILE.styles || [];
@@ -2182,6 +2406,7 @@ function saveProfile() {
     setTimeout(() => { btn.textContent = '💾 บันทึก Profile'; btn.style.background = ''; btn.style.boxShadow = ''; }, 2200);
   }
   renderSidebar();
+  renderPage();
 }
 
 // ═══════════════════════════════════════════════════
