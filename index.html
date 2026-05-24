@@ -194,6 +194,24 @@ const DB = [
   {id:'taroko',name:'Taroko',em:'🏔️',hl:'Taroko Gorge หุบเขาหินอ่อน เดินป่า',energy:3,cost:12000,days:2},
  ]},
 
+{id:'china',cont:'asia',sub:'East Asia',name:'China',flag:'🇨🇳',
+ desc:'ธรรมชาติอันตระการตา วัฒนธรรมหลายพันปี เมืองเก่า UNESCO',
+ energy:2,cost:55000,cold:false,walk:true,risk:1,wow:4,
+ best:'มี.ค.-พ.ค. / ก.ย.-พ.ย. (อากาศดี · หลีกเลี่ยงวันหยุดจีน)',
+ tags:['culture','history','nature','food'],
+ hl:['กำแพงเมืองจีน พระราชวังต้องห้าม','ลี่เจียงเมืองเก่า UNESCO','ภูเขาหิมะมังกรหยก','อาหารจีนหลากหลายภูมิภาค'],
+ cities:[
+  {id:'beijing',    name:'Beijing',     em:'🏯',hl:'กำแพงเมืองจีน พระราชวังต้องห้าม วัดสวรรค์ Hutong',energy:2,cost:22000,days:4},
+  {id:'shanghai',   name:'Shanghai',    em:'🌆',hl:'The Bund ตึกระฟ้า Pudong ตลาด Yu Garden ช้อปปิ้ง',energy:2,cost:20000,days:3},
+  {id:'xian',       name:"Xi'an",       em:'⚔️',hl:'ทหารดินเผา Terra Cotta Warriors กำแพงเมือง Muslim Quarter',energy:2,cost:15000,days:2},
+  {id:'chengdu',    name:'Chengdu',     em:'🐼',hl:'แพนด้ายักษ์ Giant Panda Base อาหารเสฉวน Hot Pot',energy:2,cost:15000,days:2},
+  {id:'guilin',     name:'Guilin',      em:'⛰️',hl:'แม่น้ำ Li River ภูเขาหินปูน Rice Terraces Longji',energy:2,cost:15000,days:3},
+  {id:'zhangjiajie',name:'Zhangjiajie',em:'🏞️',hl:'ภูเขา Avatar Glass Bridge อุทยานแห่งชาติ',energy:3,cost:18000,days:3},
+  {id:'kunming',    name:'Kunming',     em:'🌸',hl:'Stone Forest ดอกไม้ตลอดปี ประตูสู่ยูนนาน',energy:1,cost:10000,days:1},
+  {id:'lijiang',    name:'Lijiang',     em:'🏔️',hl:'เมืองเก่า UNESCO ภูเขาหิมะมังกรหยก Jade Dragon Snow Mtn',energy:2,cost:15000,days:3},
+  {id:'shangri_la', name:'Shangri-La',  em:'🌿',hl:'Songzanlin Monastery Pudacuo National Park Tiger Leaping Gorge',energy:2,cost:12000,days:2},
+ ]},
+
 {id:'vietnam',cont:'asia',sub:'Southeast Asia',name:'Vietnam',flag:'🇻🇳',
  desc:'ประวัติศาสตร์ อาหาร ธรรมชาติสวย',
  energy:2,cost:45000,cold:false,walk:true,risk:1,wow:3,
@@ -1061,37 +1079,70 @@ function fitScore(country) {
 // ═══════════════════════════════════════════════════
 //  SELECTION HELPERS
 // ═══════════════════════════════════════════════════
-function isSelected(cid) {
-  return SEL[cid] && (SEL[cid].on || Object.values(SEL[cid].cities || {}).some(Boolean));
+function isSelected(selKey) {
+  return SEL[selKey] && (SEL[selKey].on || Object.values(SEL[selKey].cities || {}).some(Boolean));
+}
+
+// ── Multi-trip helpers ──────────────────────────────
+// SEL keys: 'china' = trip 1, 'china::2' = trip 2, etc.
+function baseId(selKey) { return selKey.split('::')[0]; }
+function tripNum(selKey) { const p = selKey.split('::'); return p.length > 1 ? +p[1] : 1; }
+function tripsForCountry(cid) {
+  return Object.keys(SEL).filter(k => baseId(k) === cid).sort((a,b) => tripNum(a)-tripNum(b));
+}
+function isAnyTripSelected(cid) {
+  return tripsForCountry(cid).some(k => SEL[k] && (SEL[k].on || Object.values(SEL[k].cities||{}).some(Boolean)));
+}
+function nextTripKey(cid) {
+  const existing = tripsForCountry(cid).map(k => tripNum(k));
+  let n = 2;
+  while (existing.includes(n)) n++;
+  return n === 2 && !existing.includes(1) ? cid : `${cid}::${n}`;
+}
+function tripLabel(selKey) {
+  const n = tripNum(selKey);
+  return n === 1 ? 'ทริปที่ 1' : `ทริปที่ ${n}`;
 }
 
 function toggleCountry(cid) {
   if (!SEL[cid]) SEL[cid] = { on: false, cities: {} };
   SEL[cid].on = !SEL[cid].on;
   const c = allDB().find(d => d.id === cid);
-  // sync all cities to match country toggle
-  if (c) c.cities.forEach(city => { SEL[cid].cities[city.id] = SEL[cid].on; });
+  if (c && c.cities) c.cities.forEach(city => { SEL[cid].cities[city.id] = SEL[cid].on; });
   if (!SEL[cid].on) delete SEL[cid];
   save(); renderPage();
 }
 
-function toggleCity(cid, cityId) {
-  if (!SEL[cid]) SEL[cid] = { on: false, cities: {} };
-  if (!SEL[cid].cities) SEL[cid].cities = {};
-  SEL[cid].cities[cityId] = !SEL[cid].cities[cityId];
-  SEL[cid].on = Object.values(SEL[cid].cities).some(Boolean);
+function addCountryTrip(cid) {
+  const key = nextTripKey(cid);
+  SEL[key] = { on: false, cities: {} };
+  APP.expanded = cid;
+  APP.expandedTrip = key;
   save(); renderPage();
 }
 
-function removeFromPicks(cid) {
-  delete SEL[cid];
+function removeTrip(selKey) {
+  delete SEL[selKey];
+  save(); renderPage();
+}
+
+function toggleCity(selKey, cityId) {
+  if (!SEL[selKey]) SEL[selKey] = { on: false, cities: {} };
+  if (!SEL[selKey].cities) SEL[selKey].cities = {};
+  SEL[selKey].cities[cityId] = !SEL[selKey].cities[cityId];
+  SEL[selKey].on = Object.values(SEL[selKey].cities).some(Boolean);
+  save(); renderPage();
+}
+
+function removeFromPicks(selKey) {
+  delete SEL[selKey];
   save(); renderPage();
 }
 
 function allDB() { return [...DB, ...CUSTOM]; }
 
 function picksCount() {
-  return Object.keys(SEL).filter(k => isSelected(k)).length;
+  return Object.keys(SEL).filter(k => SEL[k] && (SEL[k].on || Object.values(SEL[k].cities||{}).some(Boolean))).length;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1102,13 +1153,16 @@ function generatePlan(instOverride) {
   const inst = instOverride || parsePlanNote();
   const items = [];
 
-  Object.keys(SEL).forEach(cid => {
-    if (!isSelected(cid)) return;
+  Object.keys(SEL).forEach(selKey => {
+    if (!isSelected(selKey)) return;
+    const cid = baseId(selKey);
     const country = allDB().find(d => d.id === cid);
     if (!country) return;
-    const selCities = Object.keys(SEL[cid].cities || {}).filter(ctyId => SEL[cid].cities[ctyId])
-      .map(ctyId => country.cities.find(c => c.id === ctyId)).filter(Boolean);
-    items.push({ country, cities: selCities });
+    const selCities = Object.keys(SEL[selKey].cities || {}).filter(ctyId => SEL[selKey].cities[ctyId])
+      .map(ctyId => country.cities ? country.cities.find(c => c.id === ctyId) : null).filter(Boolean);
+    const num = tripNum(selKey);
+    const label = num > 1 ? `${country.name} (ทริปที่ ${num})` : country.name;
+    items.push({ country, cities: selCities, selKey, tripLabel: label });
   });
 
   // Sort: prioritize user-mentioned countries first, then by urgency
@@ -1581,37 +1635,57 @@ function pageExplore() {
 
   const cardsHTML = countries.map(c => {
     const score = fitScore(c);
-    const sel = !!(SEL[c.id] && SEL[c.id].on);
-    const anySel = isSelected(c.id);
+    const trips = tripsForCountry(c.id);
+    const anySel = isAnyTripSelected(c.id);
     const expanded = APP.expanded === c.id;
     const cityCount = c.cities ? c.cities.length : 0;
     const yearsActive = Math.max(1,(PROFILE.activeUntil||65)-(PROFILE.age||40));
     const urgent = c.energy >= 4 && yearsActive <= 15;
     const phaseBudget = (getCurrentPhase()||{}).budget || 150000;
     const overBudget = c.cost > phaseBudget * 1.4;
+    const tripCount = trips.length;
 
-    const cityListHTML = expanded && c.cities ? c.cities.map(city => {
-      const checked = SEL[c.id] && SEL[c.id].cities && SEL[c.id].cities[city.id];
-      const cityEnergy = [1,2,3,4,5].map(i=>`<span style="color:${i<=city.energy?'#9B72D0':'#EDE5DC'};font-size:10px">●</span>`).join('');
-      return `<div class="city-row">
-        <span class="city-em">${city.em}</span>
-        <div class="city-info">
-          <div class="city-name">${esc(city.name)} <span style="font-size:10px">${cityEnergy}</span></div>
-          <div class="city-hl">${esc(city.hl)}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:11px;color:#E8956A;font-weight:600;margin-bottom:3px">+฿${fmt(city.cost)}</div>
-          <input type="checkbox" class="city-cb" ${checked ? 'checked' : ''}
-            onchange="toggleCity('${c.id}','${city.id}')">
-        </div>
-      </div>`;
-    }).join('') : '';
+    // Build city list for each trip (or a blank slot when no trips yet)
+    const buildCityBlock = (selKey) => {
+      const tripSel = SEL[selKey] || {on: false, cities: {}};
+      const num = tripNum(selKey);
+      const cityEnergy = (e) => [1,2,3,4,5].map(i=>`<span style="color:${i<=e?'#9B72D0':'#EDE5DC'};font-size:10px">●</span>`).join('');
+      const rows = c.cities ? c.cities.map(city => {
+        const checked = tripSel.cities && tripSel.cities[city.id];
+        return `<div class="city-row">
+          <span class="city-em">${city.em}</span>
+          <div class="city-info">
+            <div class="city-name">${esc(city.name)} <span style="font-size:10px">${cityEnergy(city.energy)}</span></div>
+            <div class="city-hl">${esc(city.hl)}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:11px;color:#E8956A;font-weight:600;margin-bottom:3px">+฿${fmt(city.cost)} · ${city.days}วัน</div>
+            <input type="checkbox" class="city-cb" ${checked ? 'checked' : ''}
+              onchange="toggleCity('${selKey}','${city.id}')">
+          </div>
+        </div>`;
+      }).join('') : '';
+      const header = tripCount > 1 || (tripCount === 1 && num > 1) ? `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 8px;border-bottom:1px dashed #EDE5DC;margin-bottom:4px">
+          <div style="font-size:11px;font-weight:700;color:#9B72D0">✈️ ${tripLabel(selKey)}</div>
+          <button onclick="removeTrip('${selKey}')" style="background:none;border:none;color:#C45A7A;font-size:12px;cursor:pointer;padding:2px 6px">✕ ลบทริปนี้</button>
+        </div>` : '';
+      return `<div style="margin-top:6px">${header}<div class="city-list" style="margin-top:0">${rows}</div></div>`;
+    };
+
+    const cityBlocksHTML = expanded && c.cities ? (() => {
+      const keys = trips.length > 0 ? trips : [c.id]; // show main trip slot even if empty
+      return keys.map(k => buildCityBlock(k)).join('');
+    })() : '';
+
+    const firstTrip = SEL[c.id];
+    const firstSel = firstTrip && firstTrip.on;
 
     return `<div class="cc${anySel ? ' selected' : ''}">
       <div class="cc-head">
         <div class="cc-flag">${c.flag}</div>
         <div class="cc-meta">
-          <div class="cc-name">${esc(c.name)}</div>
+          <div class="cc-name">${esc(c.name)}${tripCount > 1 ? ` <span style="font-size:11px;background:#F0EBF9;color:#7B52B0;padding:1px 7px;border-radius:20px;font-weight:600">${tripCount} ทริป</span>` : ''}</div>
           <div class="cc-sub" style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
             <span>${esc(c.sub)}</span>
             ${urgent ? '<span class="badge" style="background:#F0E8FF;color:#9B72D0;font-size:10px">⚡ ด่วน</span>' : ''}
@@ -1619,9 +1693,10 @@ function pageExplore() {
           </div>
           <div class="cc-stars">${stars(score)}</div>
         </div>
-        <div style="margin-left:auto;flex-shrink:0">
-          <button class="btn btn-sm ${sel ? 'btn-g' : 'btn-p'}" onclick="toggleCountry('${c.id}')">
-            ${sel ? '✓ เพิ่มแล้ว' : '+ เพิ่ม'}</button>
+        <div style="margin-left:auto;flex-shrink:0;display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <button class="btn btn-sm ${firstSel ? 'btn-g' : 'btn-p'}" onclick="toggleCountry('${c.id}')">
+            ${firstSel ? '✓ ทริป 1' : '+ เพิ่ม'}</button>
+          ${anySel ? `<button class="btn btn-sm" style="background:#FFF0F9;color:#9B72D0;font-size:11px;border:1px solid #E8D5F5" onclick="addCountryTrip('${c.id}')">＋ ทริปใหม่</button>` : ''}
         </div>
       </div>
       <div style="font-size:12px;color:#7B52B0;margin-bottom:6px;font-style:italic">${esc(c.desc)}</div>
@@ -1635,8 +1710,8 @@ function pageExplore() {
       ${cityCount > 0 ? `
         <button onclick="APP.expanded=APP.expanded==='${c.id}'?null:'${c.id}';renderPage()"
           style="width:100%;margin-top:10px;padding:6px;border:none;background:#FFF8F0;border-radius:8px;font-size:12px;color:#9B72D0;cursor:pointer;font-weight:600;font-family:inherit">
-          ${expanded ? '▲ ซ่อนเมือง' : '▼ ดูเมือง ('+ cityCount +')'}</button>
-        ${expanded ? `<div class="city-list">${cityListHTML}</div>` : ''}
+          ${expanded ? '▲ ซ่อนเมือง' : `▼ ดูเมือง (${cityCount})`}</button>
+        ${expanded ? cityBlocksHTML : ''}
       ` : ''}
     </div>`;
   }).join('');
@@ -1676,7 +1751,7 @@ function pageExplore() {
 // ═══════════════════════════════════════════════════
 function pagePicks() {
   const picked = Object.keys(SEL).filter(k => isSelected(k))
-    .map(k => ({ key: k, country: allDB().find(d => d.id === k), sel: SEL[k] }))
+    .map(k => ({ key: k, cid: baseId(k), country: allDB().find(d => d.id === baseId(k)), sel: SEL[k] }))
     .filter(p => p.country);
 
   if (!picked.length) return `
@@ -1690,25 +1765,32 @@ function pagePicks() {
     </div>
   `;
 
-  const cardsHTML = picked.map(({ key, country, sel }) => {
+  const cardsHTML = picked.map(({ key, cid, country, sel }) => {
     const score = fitScore(country);
+    const num = tripNum(key);
+    const isMultiTrip = Object.keys(SEL).filter(k => baseId(k) === cid).length > 1;
     const selCities = Object.keys(sel.cities || {}).filter(k => sel.cities[k])
-      .map(k => country.cities.find(c => c.id === k)).filter(Boolean);
+      .map(k => country.cities ? country.cities.find(c => c.id === k) : null).filter(Boolean);
+    const cityCost = selCities.reduce((s, c) => s + (c.cost || 0), 0);
     const yearsActive = Math.max(1, (PROFILE.activeUntil || 65) - (PROFILE.age || 40));
     const urgent = country.energy >= 4 && yearsActive <= 15;
 
-    return `<div class="card" style="margin-bottom:12px">
+    return `<div class="card" style="margin-bottom:12px${isMultiTrip ? ';border-left:3px solid #C9A8E8' : ''}">
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div style="font-size:36px;line-height:1">${country.flag}</div>
         <div style="flex:1">
-          <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600">${esc(country.name)}</div>
+          <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600">
+            ${esc(country.name)}
+            ${isMultiTrip ? `<span style="font-size:11px;background:#F0EBF9;color:#7B52B0;padding:1px 8px;border-radius:20px;margin-left:6px;font-family:inherit">${tripLabel(key)}</span>` : ''}
+          </div>
           <div style="font-size:12px;color:#9E918A;margin-bottom:6px">${esc(country.sub)}</div>
           <div style="font-size:14px">${stars(score)}</div>
           ${urgent ? '<span class="badge" style="background:#F0E8FF;color:#9B72D0;margin-top:4px">⚡ ควรไปก่อนอายุ 60</span>' : ''}
           ${selCities.length > 0 ? `
             <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
               ${selCities.map(c => `<span class="badge" style="background:#F0EBE5;color:#6B5E54">${c.em} ${esc(c.name)}</span>`).join('')}
-            </div>` : ''}
+            </div>
+            <div style="font-size:11px;color:#E8956A;margin-top:6px">รวม ฿${fmt(cityCost)} · ${selCities.reduce((s,c)=>s+(c.days||0),0)} วัน</div>` : ''}
         </div>
         <div style="flex-shrink:0;text-align:right">
           <div style="font-size:14px;font-weight:700;color:#E8956A;margin-bottom:4px">฿${fmt(country.cost)}</div>
@@ -1723,7 +1805,7 @@ function pagePicks() {
 
   return `
     <div class="page-title">💫 My Picks</div>
-    <div class="page-sub">${picked.length} ปลายทาง · งบรวมประมาณ ฿${fmt(totalEst)}</div>
+    <div class="page-sub">${picked.length} ทริป · งบรวมประมาณ ฿${fmt(totalEst)}</div>
 
     <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
       <button class="btn btn-p" onclick="runGeneratePlan()">📅 สร้าง Year Plan →</button>
@@ -2121,7 +2203,7 @@ function pageProfile() {
 
   const profileCards = PROFILES.map(p => {
     const isActive = p.id === ACTIVE_ID;
-    const selCount = Object.keys(p.sel || {}).filter(k => p.sel[k]?.on).length;
+    const selCount = [...new Set(Object.keys(p.sel || {}).filter(k => p.sel[k]?.on).map(k => k.split('::')[0]))].length;
     const tripCount = (p.plan || []).length;
     const totalBudget = (p.plan || []).reduce((s, t) => s + (t.budget || 0), 0);
     const updatedDate = new Date(p.updatedAt || p.createdAt || Date.now())
@@ -2398,13 +2480,7 @@ function saveProfile() {
   if (nameEl) PROFILE.name = nameEl.value.trim();
   if (ageEl && +ageEl.value) PROFILE.age = +ageEl.value;
   save();
-  const btn = document.querySelector('[onclick="saveProfile()"]');
-  if (btn) {
-    btn.textContent = '✓ บันทึกแล้ว!';
-    btn.style.background = 'linear-gradient(135deg,#5CB88A,#3D9A6C)';
-    btn.style.boxShadow = '0 3px 12px rgba(92,184,138,.4)';
-    setTimeout(() => { btn.textContent = '💾 บันทึก Profile'; btn.style.background = ''; btn.style.boxShadow = ''; }, 2200);
-  }
+  showToast('✅ บันทึก Profile แล้ว!', '#7B52B0');
   renderSidebar();
   renderPage();
 }
