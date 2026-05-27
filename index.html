@@ -605,6 +605,18 @@ const DB = [
   {id:'quito',name:'Quito',em:'🏙️',hl:'Old Town UNESCO Middle of the World Monument',energy:2,cost:15000,days:1},
  ]},
 
+{id:'bolivia',cont:'americas',sub:'South America',name:'Bolivia',flag:'🇧🇴',
+ desc:'ทะเลเกลือ Salar de Uyuni เมืองสูงที่สุดในโลก',
+ energy:3,cost:80000,cold:false,walk:false,risk:2,wow:5,
+ best:'พ.ค.-ต.ค. (แล้ง · ท้องฟ้าใส)',
+ tags:['nature','adventure','culture'],
+ hl:['Salar de Uyuni ทะเลเกลือใหญ่สุดในโลก','La Paz เมืองหลวงสูงสุด','Flamingo สีชมพู','กระจกสะท้อนฟ้า'],
+ cities:[
+  {id:'uyuni',    name:'Salar de Uyuni',em:'🪩',hl:'ทะเลเกลือ 10,582 ตร.กม. กระจกสะท้อนฟ้า Flamingo',energy:2,cost:25000,days:3},
+  {id:'lapaz',    name:'La Paz',        em:'🏙️',hl:'เมืองหลวงสูงสุดโลก 3,640m กระเช้า Mi Teleférico ตลาดแม่มด',energy:2,cost:12000,days:2},
+  {id:'copacabana',name:'Copacabana',   em:'💧',hl:'ริม Lake Titicaca ฝั่ง Bolivia เกาะ Isla del Sol',energy:1,cost:8000,days:1},
+ ]},
+
 // ── AFRICA ──
 {id:'morocco',cont:'africa',sub:'North Africa',name:'Morocco',flag:'🇲🇦',
  desc:'ตลาด Medina ทะเลทราย Berber',
@@ -807,32 +819,49 @@ let PLAN_GEN = PLAN.length > 0;
 let APP = { page: 'explore', cont: 'asia', expanded: null, planNote: _ap.planNote || '', planExplain: '', planView: 'table' };
 
 let TRIP_GROUPS = load('ltbp3_groups', []);
-// Pre-populate South America Grand Trip if not stored yet
-if (!TRIP_GROUPS.find(g => g.id === 'south_america_grand')) {
+
+// ── South America Trip 1: Inca & Andes ──────────────
+if (!TRIP_GROUPS.find(g => g.id === 'sa_inca')) {
   TRIP_GROUPS.push({
-    id: 'south_america_grand',
-    name: '🌎 South America Grand Trip',
-    countries: ['ecuador_g', 'peru', 'chile', 'argentina'],
-    totalDays: 43, budget: 300000,
-    bestSeason: 'Oct–Dec หรือ Feb–Mar', energy: 4,
-    notes: 'บินเข้า Quito · บินออก Buenos Aires · เส้นทางเหนือลงใต้',
+    id: 'sa_inca',
+    name: '🏛️ SA ทริป 1 — Inca & Andes',
+    countries: ['peru', 'bolivia'],
+    totalDays: 16, budget: 220000,
+    bestSeason: 'พ.ค.–ต.ค. (หน้าแล้ง ท้องฟ้าใส)', energy: 4,
+    notes: 'บินเข้า Lima 🇵🇪 · บินออก Atacama/Santiago 🇨🇱 · เส้นทาง Inca ตามสาย Andes',
     stops: [
-      { flag:'🇪🇨', country:'Ecuador', city:'Quito',            days:2, highlight:'เมืองเก่า UNESCO ตลาด Otavalo' },
-      { flag:'🇪🇨', country:'Ecuador', city:'Galapagos Islands', days:8, highlight:'Cruise เต่ายักษ์ นกบูบี้ สิงโตทะเล' },
-      { flag:'🇵🇪', country:'Peru',    city:'Lima',             days:2, highlight:'อาหารระดับโลก Miraflores' },
-      { flag:'🇵🇪', country:'Peru',    city:'Cusco',            days:2, highlight:'เมืองอินคา acclimatize ก่อนขึ้นที่สูง' },
-      { flag:'🇵🇪', country:'Peru',    city:'Machu Picchu',     days:2, highlight:'วิหารอินคา มรดกโลก UNESCO' },
-      { flag:'🇵🇪', country:'Peru',    city:'Sacred Valley',    days:1, highlight:'Pisac Ollantaytambo ตลาดพื้นเมือง' },
-      { flag:'🇵🇪', country:'Peru',    city:'Lake Titicaca',    days:2, highlight:'เกาะ Uros ชนพื้นเมือง ทะเลสาบสูงสุดในโลก' },
-      { flag:'🇧🇴', country:'Bolivia', city:'Copacabana',       days:1, highlight:'ริมทะเลสาบ Titicaca ฝั่ง Bolivia' },
-      { flag:'🇧🇴', country:'Bolivia', city:'La Paz',           days:2, highlight:'เมืองหลวงสูงสุด กระเช้า Mi Teleférico ตลาดแม่มด' },
-      { flag:'🇧🇴', country:'Bolivia', city:'Salar de Uyuni',   days:3, highlight:'ทะเลเกลือใหญ่สุด ท้องฟ้าสะท้อน Flamingo' },
-      { flag:'🇨🇱', country:'Chile',   city:'San Pedro de Atacama', days:4, highlight:'ทะเลทราย ดูดาว Valle de la Luna' },
-      { flag:'🇨🇱', country:'Chile',   city:'Santiago',         days:1, highlight:'แวะพัก transit' },
-      { flag:'🇨🇱', country:'Chile',   city:'Torres del Paine', days:5, highlight:'Trekking W-Circuit ภูเขาหินแกรนิต' },
-      { flag:'🇦🇷', country:'Argentina', city:'El Calafate',    days:3, highlight:'Perito Moreno Glacier ธารน้ำแข็งเดิน' },
-      { flag:'🇦🇷', country:'Argentina', city:'El Chaltén',     days:2, highlight:'Trekking Fitz Roy' },
-      { flag:'🇦🇷', country:'Argentina', city:'Buenos Aires',   days:3, highlight:'Tango La Boca สเต็กระดับโลก' },
+      { flag:'🇵🇪', country:'Peru',    city:'Lima',              days:1, highlight:'แวะพัก transit · อาหารทะเลเลิศ Ceviche' },
+      { flag:'🇵🇪', country:'Peru',    city:'Cusco',             days:2, highlight:'เมือง Inca 3,400m · acclimatize ก่อนขึ้นที่สูง · Sacsayhuaman' },
+      { flag:'🇵🇪', country:'Peru',    city:'Sacred Valley',     days:1, highlight:'Pisac Ruins · Ollantaytambo ป้อมปราการ Inca · ตลาดพื้นเมือง' },
+      { flag:'🇵🇪', country:'Peru',    city:'Machu Picchu',      days:2, highlight:'🌟 1 ใน 7 มหัศจรรย์โลก · Inca Trail ตีนเขา · Sun Gate' },
+      { flag:'🇵🇪', country:'Peru',    city:'Lake Titicaca',     days:2, highlight:'ทะเลสาบสูง 3,800m · เกาะ Uros ลอยน้ำ · เกาะ Taquile' },
+      { flag:'🇧🇴', country:'Bolivia', city:'Copacabana',        days:1, highlight:'ริมทะเลสาบฝั่ง Bolivia · Isla del Sol พระอาทิตย์ขึ้นงาม' },
+      { flag:'🇧🇴', country:'Bolivia', city:'La Paz',            days:2, highlight:'เมืองหลวงสูงสุดโลก 3,640m · กระเช้า Mi Teleférico · ตลาดแม่มด Witches\' Market' },
+      { flag:'🇧🇴', country:'Bolivia', city:'Salar de Uyuni',    days:3, highlight:'🌟 ทะเลเกลือใหญ่สุดโลก 10,582 ตร.กม. · กระจกสะท้อนฟ้า · Flamingo สีชมพู' },
+      { flag:'🇨🇱', country:'Chile',   city:'San Pedro de Atacama', days:2, highlight:'ทะเลทรายแห้งสุดในโลก · Valle de la Luna · Stargazing ดาวชัดที่สุด' },
+    ]
+  });
+  localStorage.setItem('ltbp3_groups', JSON.stringify(TRIP_GROUPS));
+}
+
+// ── South America Trip 2: Wild South ────────────────
+if (!TRIP_GROUPS.find(g => g.id === 'sa_wild')) {
+  TRIP_GROUPS.push({
+    id: 'sa_wild',
+    name: '🌿 SA ทริป 2 — Wild South',
+    countries: ['argentina', 'ecuador_g', 'chile'],
+    totalDays: 27, budget: 420000,
+    bestSeason: 'พ.ย.–มี.ค. (Patagonia Summer)', energy: 4,
+    notes: 'บินเข้า Buenos Aires 🇦🇷 · บินออก Quito 🇪🇨 หรือกลับทาง Santiago · ทริปสุดขอบโลก',
+    stops: [
+      { flag:'🇦🇷', country:'Argentina', city:'Buenos Aires',    days:3, highlight:'Tango · San Telmo · La Boca · สเต็กระดับโลก · Recoleta Cemetery' },
+      { flag:'🇦🇷', country:'Argentina', city:'Iguazu Falls',    days:2, highlight:'🌟 น้ำตกใหญ่สุดในโลก กว้าง 2.7km · ทั้ง 2 ฝั่ง Argentina+Brazil' },
+      { flag:'🇦🇷', country:'Argentina', city:'El Calafate',     days:2, highlight:'Perito Moreno Glacier · ธารน้ำแข็งที่ยังมีชีวิต · เดินบนน้ำแข็งได้' },
+      { flag:'🇨🇱', country:'Chile',     city:'Torres del Paine', days:6, highlight:'🌟 W-Circuit Trek · ภูเขาหินแกรนิต · Grey Glacier · Lake Pehoé' },
+      { flag:'🇦🇷', country:'Argentina', city:'Bariloche',       days:3, highlight:'Patagonia Lake District · Cerro Catedral · ช็อกโกแลตชื่อดัง · Hiking' },
+      { flag:'🇨🇱', country:'Chile',     city:'Easter Island',   days:3, highlight:'🌟 Moai 900 รูปปั้นปริศนา · Rano Raraku · Ahu Tongariki · ห่างไกล unique' },
+      { flag:'🇪🇨', country:'Ecuador',   city:'Quito',           days:1, highlight:'Old Town UNESCO · Middle of the World Monument · บินต่อ Galapagos' },
+      { flag:'🇪🇨', country:'Ecuador',   city:'Galapagos Islands', days:7, highlight:'🌟 สัตว์ที่หาไม่ได้ที่ไหนในโลก · เต่ายักษ์ · Snorkel กับสิงโตทะเล · Blue-footed Booby' },
     ]
   });
   localStorage.setItem('ltbp3_groups', JSON.stringify(TRIP_GROUPS));
@@ -1400,6 +1429,58 @@ function removePlan(idx) {
   save(); renderPage();
 }
 
+// ── Add South America 2-Trip Package ──────────────────
+function makeSAEntry(groupId, year, totalDays, totalCost, primaryCountryIds) {
+  const currentYear = new Date().getFullYear();
+  const age = PROFILE.age + (year - currentYear);
+  const phase = getPhaseForAge(age) || {};
+  const items = primaryCountryIds.map(cid => ({
+    country: allDB().find(d => d.id === cid) || {id:cid, name:cid, flag:'🌎', cont:'americas'},
+    cities: []
+  })).filter(x => x.country);
+  const warn = [];
+  if (age >= 60 && totalDays > 20) warn.push('⚠️ ทริปยาว ควรเตรียมสุขภาพให้พร้อม');
+  return {
+    year, age,
+    trip: { items, totalCost, totalDays, maxEnergy: 4, cont: 'americas' },
+    phase: phase || null,
+    warn, combines: null, vol: null,
+    _groupId: groupId,
+  };
+}
+
+function addSAGroupTrips() {
+  // Remove old single SA entry if exists (any entry containing peru+argentina together)
+  const oldIdx = PLAN.findIndex(e =>
+    e.trip.items.some(i => i.country.id === 'peru') &&
+    e.trip.items.some(i => i.country.id === 'argentina')
+  );
+  if (oldIdx >= 0) PLAN.splice(oldIdx, 1);
+
+  // Remove existing sa trips if any
+  const rmIdx = () => PLAN.findIndex(e => e._groupId === 'sa_inca' || e._groupId === 'sa_wild');
+  let ri; while((ri = rmIdx()) >= 0) PLAN.splice(ri, 1);
+
+  // Find retirement year (when user turns 58)
+  const currentYear = new Date().getFullYear();
+  const retireYear = currentYear + Math.max(0, 58 - PROFILE.age);
+
+  // Trip 1: before retirement (2 years before)
+  const year1 = Math.max(currentYear + 1, retireYear - 2);
+  // Trip 2: 3 years after retirement
+  const year2 = retireYear + 3;
+
+  const sa1 = makeSAEntry('sa_inca', year1, 16, 220000, ['peru', 'bolivia']);
+  const sa2 = makeSAEntry('sa_wild', year2, 27, 420000, ['argentina', 'ecuador_g']);
+
+  PLAN.push(sa1, sa2);
+  PLAN.sort((a, b) => a.year !== b.year ? a.year - b.year : 0);
+  PLAN_GEN = true;
+  save();
+  renderPage();
+  showToast('🌎 ใส่แผน South America 2 ทริปแล้ว!', '#5CB88A');
+}
+
 function submitPlanEdits() {
   const currentYear = new Date().getFullYear();
   PLAN.forEach((entry, idx) => {
@@ -1426,8 +1507,10 @@ function submitPlanEdits() {
 function showTripDetail(idx) {
   const entry = PLAN[idx];
   if (!entry) return;
-  const countryIds = entry.trip.items.map(i => i.country.id);
-  const group = TRIP_GROUPS.find(g => countryIds.some(id => g.countries.includes(id)));
+  // Prefer _groupId if set (SA grouped trips)
+  const group = entry._groupId
+    ? TRIP_GROUPS.find(g => g.id === entry._groupId)
+    : TRIP_GROUPS.find(g => entry.trip.items.some(i => g.countries.includes(i.country.id)));
   if (group) { showGroupDetail(group, entry); } else { showSingleDetail(entry); }
 }
 
@@ -2164,6 +2247,7 @@ function pagePlan() {
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
       <button class="btn btn-p" onclick="runGeneratePlan()">🔄 Generate ใหม่</button>
+      <button class="btn btn-sm" style="background:#F0F8EC;color:#4A8A3C;border:1.5px solid #8DC87A;font-weight:600" onclick="addSAGroupTrips()">🌎 ใส่แผน South America 2 ทริป</button>
       <button class="btn btn-g btn-sm" onclick="exportData()">💾 Save ข้อมูล</button>
       <label class="btn btn-g btn-sm" style="cursor:pointer">📂 โหลดข้อมูล<input type="file" accept=".json" style="display:none" onchange="importData(this)"></label>
       <button class="btn btn-g btn-sm" onclick="shareLink()" style="border-color:#9B72D0;color:#9B72D0">🔗 Share Link</button>
