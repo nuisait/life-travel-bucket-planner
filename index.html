@@ -1905,23 +1905,29 @@ function parsePlanNote() {
     'ญี่ปุ่น':'japan','เกาหลี':'skorea','เกาหลีใต้':'skorea','ไต้หวัน':'taiwan',
     'เวียดนาม':'vietnam','กัมพูชา':'cambodia','พม่า':'myanmar','อินโดนีเซีย':'indonesia',
     'บาหลี':'indonesia','ฟิลิปปินส์':'philippines','สิงคโปร์':'singapore',
-    'มาเลเซีย':'malaysia','อินเดีย':'india','จีน':'china','เนปาล':'nepal',
-    'ศรีลังกา':'srilanka','อิตาลี':'italy','ฝรั่งเศส':'france','สเปน':'spain',
-    'กรีซ':'greece','โปรตุเกส':'portugal','สวิตเซอร์แลนด์':'switzerland',
+    'มาเลเซีย':'malaysia','อินเดีย':'india','จีน':'china','ลี่เจียง':'china',
+    'เนปาล':'nepal','ภูฐาน':'bhutan','ศรีลังกา':'srilanka',
+    'จอร์แดน':'jordan','โอมาน':'oman','ตุรกี':'turkey',
+    'อิตาลี':'italy','ฝรั่งเศส':'france','สเปน':'spain',
+    'กรีซ':'greece','โปรตุเกส':'portugal','สวิตเซอร์แลนด์':'switzerland','สวิส':'switzerland',
     'เยอรมนี':'germany','อังกฤษ':'uk','นอร์เวย์':'norway','ไอซ์แลนด์':'iceland',
-    'ตุรกี':'turkey','โมร็อกโก':'morocco','อียิปต์':'egypt','แทนซาเนีย':'tanzania',
-    'แอฟริกาใต้':'southafrica','เคนยา':'kenya','ออสเตรเลีย':'australia',
-    'นิวซีแลนด์':'newzealand','เปรู':'peru','บราซิล':'brazil',
+    'สวีเดน':'sweden','เดนมาร์ก':'denmark','ฮังการี':'hungary','โปแลนด์':'poland','โครเอเชีย':'croatia',
+    'โมร็อกโก':'morocco','อียิปต์':'egypt','แทนซาเนีย':'tanzania','เคนยา':'kenya',
+    'แอฟริกาใต้':'southafrica','นามิเบีย':'namibia',
+    'ออสเตรเลีย':'australia','นิวซีแลนด์':'newzealand',
+    'เปรู':'peru','ชิลี':'chile','อาร์เจนตินา':'argentina','โบลิเวีย':'bolivia',
+    'เอกวาดอร์':'ecuador_g','กาลาปากอส':'ecuador_g',
     'อเมริกา':'usa','แคนาดา':'canada','เม็กซิโก':'mexico',
+    'แอนตาร์กติกา':'antarctica','ขั้วโลกใต้':'antarctica',
   };
   const prioritize = [];
   Object.entries(TH).forEach(([th, id]) => { if (note.includes(th) && !prioritize.includes(id)) prioritize.push(id); });
   allDB().forEach(c => { if ((note.includes(c.name.toLowerCase()) || note.includes(c.id)) && !prioritize.includes(c.id)) prioritize.push(c.id); });
 
-  // Detect deferred continents (e.g. "อเมริกาใต้ หลัง 60")
+  // Detect deferred continents
   const deferConts = [];
-  const deferMatch = note.match(/หลัง(?:อายุ)?\s*(\d+)/);
-  const deferMinAge = deferMatch ? +deferMatch[1] : 60;
+  const deferMatch = note.match(/หลัง(?:อายุ|เกษียณ)?\s*(\d+)/);
+  const deferMinAge = deferMatch ? +deferMatch[1] : 58;
   if (/อเมริกาใต้|south america/.test(note)) deferConts.push('americas');
   if (/ขั้วโลก|polar|antarctica/.test(note)) deferConts.push('polar');
   if (/ยุโรป|europe/.test(note) && /หลัง/.test(note)) deferConts.push('europe');
@@ -1934,7 +1940,7 @@ function parsePlanNote() {
   if (/ยุโรป.*ปีละ\s*2|ปีละ\s*2.*ยุโรป/.test(note)) fastConts.push('europe');
 
   return {
-    separate: /แยก|ไม่รวม|ประเทศละ/.test(note),
+    separate: /แยก|ไม่รวม|ประเทศละ|แยกทริป/.test(note),
     prioritize,
     deferConts,
     deferMinAge,
@@ -1986,37 +1992,38 @@ order ต้องครบทุก id: ${selIds.join(',')}`;
   return { prioritize: p.order || [], separate: !!p.separate };
 }
 
+function planNoteWidget() {
+  const hints = [
+    'ญี่ปุ่นก่อนเลย','แยกยุโรปแต่ละทริป','หลังเกษียณ 58','ปีละ 2 ทริป',
+    'ทริปสั้นๆ ก่อน','รวมประเทศใกล้กัน','งบประหยัด','ไม่เดินเยอะ',
+  ];
+  return `
+    <div style="margin-bottom:8px">
+      <textarea id="plan_note" class="inp" rows="2"
+        placeholder="เช่น: อยากไปญี่ปุ่นก่อนเลย · แยกยุโรปออกแต่ละทริป · หลังเกษียณค่อยไปไกล"
+        oninput="APP.planNote=this.value"
+        style="resize:vertical;min-height:60px">${esc(APP.planNote||'')}</textarea>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:7px">
+        ${hints.map(h => `<button class="chip" style="font-size:11px;padding:4px 10px" onclick="
+          const el=document.getElementById('plan_note');
+          const cur=el.value.trim();
+          el.value=cur?(cur+' · '+${JSON.stringify(h)}):${JSON.stringify(h)};
+          APP.planNote=el.value;el.focus();">${h}</button>`).join('')}
+      </div>
+    </div>`;
+}
+
 async function runGeneratePlan() {
   const el = document.getElementById('plan_note');
   if (el) APP.planNote = el.value;
+  APP.planExplain = '';
 
-  const apiKey = localStorage.getItem('claude_api_key') || '';
-  let inst = null;
-
-  if (APP.planNote.trim() && apiKey) {
-    const btn = document.querySelector('[onclick="runGeneratePlan()"]');
-    if (btn) { btn.innerHTML = '⏳ AI กำลังคิด...'; btn.disabled = true; btn.style.opacity = '0.7'; }
-    try {
-      inst = await callClaude(APP.planNote, apiKey);
-    } catch(err) {
-      APP.planExplain = '';
-      showToast('⚠️ AI error — ใช้แผนปกติแทน', '#E8956A');
-    }
-    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-  } else {
-    APP.planExplain = '';
-  }
-
-  generatePlan(inst);
+  // Local generation — no API key needed
+  generatePlan(null);
   save();
   renderSidebar();
   renderPage();
-  const btn2 = document.querySelector('[onclick="runGeneratePlan()"]');
-  if (btn2) {
-    btn2.innerHTML = '✓ Generate แล้ว!';
-    btn2.style.background = 'linear-gradient(135deg,#5CB88A,#3D9A6C)';
-    setTimeout(() => { btn2.innerHTML = '🔄 Generate ใหม่'; btn2.style.background = ''; }, 2000);
-  }
+  showToast('✅ Generate แผนแล้ว!', '#7B52B0');
 }
 
 // ═══════════════════════════════════════════════════
@@ -2027,19 +2034,22 @@ function pagePlan() {
     const hasPicks = picksCount() > 0;
     return `
       <div class="page-title">📅 Year Plan</div>
-      <div class="page-sub">AI จัดแผนการเดินทางตลอดช่วงชีวิต</div>
-      <div class="card" style="text-align:center;padding:40px">
-        <div style="font-size:48px;margin-bottom:12px">📅</div>
-        <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px">
-          ${hasPicks ? 'กด Generate Plan เพื่อสร้างแผน' : 'เลือกปลายทางก่อน'}
+      <div class="page-sub">วางแผนการเดินทางตลอดช่วงชีวิต</div>
+      <div class="card" style="padding:28px 24px">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:44px;margin-bottom:10px">📅</div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;color:#2C1810">
+            ${hasPicks ? 'บอกความต้องการ แล้วกด Generate' : 'เลือกปลายทางก่อนนะคะ'}
+          </div>
         </div>
         ${hasPicks ? `
-          <textarea id="plan_note" class="inp" rows="2"
-            placeholder="${localStorage.getItem('claude_api_key') ? '✨ พิมพ์ความต้องการ AI จะวางแผนให้จริงๆ' : 'เช่น: อยากไปญี่ปุ่นก่อนเลย · แยกยุโรปออกแต่ละทริป · ไม่รวมทริป'}"
-            oninput="APP.planNote=this.value"
-            style="resize:vertical;min-height:54px;margin-bottom:12px;display:block;text-align:left">${esc(APP.planNote||'')}</textarea>
-          <button class="btn btn-p" onclick="runGeneratePlan()">🤖 สร้าง Year Plan</button>`
-          : `<button class="btn btn-g" onclick="nav('explore')">🌍 ไปเลือกปลายทาง</button>`}
+          ${planNoteWidget()}
+          <button class="btn btn-p" onclick="runGeneratePlan()" style="width:100%;padding:13px;font-size:15px;margin-top:4px">
+            ✨ Generate Year Plan
+          </button>` : `
+          <div style="text-align:center">
+            <button class="btn btn-g" onclick="nav('explore')">🌍 ไปเลือกปลายทาง</button>
+          </div>`}
       </div>`;
   }
 
@@ -2230,21 +2240,7 @@ function pagePlan() {
     <div class="page-title">📅 Year Plan</div>
     <div class="page-sub">${PLAN.length} ทริป ใน ${span} ปี · งบรวม ฿${fmt(totalBudget)}</div>
 
-    <div style="margin-bottom:8px">
-      <textarea id="plan_note" class="inp" rows="2"
-        placeholder="${localStorage.getItem('claude_api_key') ? '✨ พิมพ์ความต้องการ AI จะวางแผนให้จริงๆ เช่น อยากไปญี่ปุ่นก่อน แยกยุโรปออก ขอทริปสั้นๆ' : 'เช่น: อยากไปญี่ปุ่นก่อนเลย · แยกยุโรปออกแต่ละทริป · ไม่รวมทริป'}"
-        oninput="APP.planNote=this.value"
-        style="resize:vertical;min-height:60px">${esc(APP.planNote||'')}</textarea>
-      <details style="margin-top:5px">
-        <summary style="font-size:12px;color:#9E918A;cursor:pointer;user-select:none">🔑 Claude API Key ${localStorage.getItem('claude_api_key') ? '<span style="color:#5CB88A">● เชื่อมต่อแล้ว</span>' : '(ใส่เพื่อให้ AI วางแผนจริง)'}</summary>
-        <input class="inp" id="api_key_inp" type="password"
-          placeholder="sk-ant-api03-..."
-          value="${esc(localStorage.getItem('claude_api_key')||'')}"
-          oninput="localStorage.setItem('claude_api_key',this.value);renderPage()"
-          style="margin-top:6px;font-size:13px;font-family:monospace">
-        <div style="font-size:11px;color:#9E918A;margin-top:4px">Key เก็บไว้ใน browser เท่านั้น ไม่ส่งไปที่อื่น</div>
-      </details>
-    </div>
+    ${planNoteWidget()}
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
       <button class="btn btn-p" onclick="runGeneratePlan()">🔄 Generate ใหม่</button>
       <button class="btn btn-sm" style="background:#F0F8EC;color:#4A8A3C;border:1.5px solid #8DC87A;font-weight:600" onclick="addSAGroupTrips()">🌎 ใส่แผน South America 2 ทริป</button>
@@ -2260,7 +2256,7 @@ function pagePlan() {
 
     ${APP.planExplain ? `
     <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#F0E8FF,#E8F4FF);border-left:3px solid #9B72D0">
-      <div style="font-size:12px;color:#9B72D0;font-weight:700;margin-bottom:4px">✨ Claude วางแผนให้</div>
+      <div style="font-size:12px;color:#9B72D0;font-weight:700;margin-bottom:4px">✨ วางแผนตาม Comment ของคุณ</div>
       <div style="font-size:13px;color:#5A3E8A;line-height:1.7">${esc(APP.planExplain)}</div>
     </div>` : ''}
 
